@@ -16,7 +16,7 @@ const LandingPage = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'left',
-        paddingLeft: '80px', // Align the box away from the left side
+        paddingLeft: '30px', // Align the box away from the left side
       }}
     >
       <div
@@ -24,15 +24,13 @@ const LandingPage = () => {
           backgroundColor: 'rgba(255, 255, 255, 0.6)', // Adjust opacity
           padding: '250px', // Padding for internal spacing
           borderRadius: '30px', // Increased border radius
-          maxWidth: '800px', // Adjusted width to match the prototype
-          maxHeight: "800px",
+          maxWidth: '800hvs', // Adjusted width to match the prototype
           textAlign: 'center',
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         }}
       >
         {/* Header Section */}
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginTop: '5px' }}>Log In</h1>
-        <p style={{ fontSize: '1rem', color: '#555', marginBottom: '20px' }}>Sign in to continue</p>
+        <h1 style={{ fontSize: '3.5rem', fontWeight: 'bold', marginBottom: '5px' }}>Sign In</h1>
 
         {/* Login Form */}
         <main>
