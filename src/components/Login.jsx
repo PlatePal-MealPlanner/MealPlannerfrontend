@@ -2,10 +2,9 @@
 
 import React from 'react';
 
-const Login = () => {
+const Login = ({ toggleSignUp }) => {
   return (
     <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {/* Username Field */}
       <label style={{ width: '100%', marginBottom: '10px', textAlign: 'left' }}>
         <p style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#333' }}>Username</p>
         <input
@@ -22,7 +21,6 @@ const Login = () => {
         />
       </label>
 
-      {/* Password Field */}
       <label style={{ width: '100%', marginBottom: '10px', textAlign: 'left' }}>
         <p style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#333' }}>Password</p>
         <input
@@ -39,13 +37,11 @@ const Login = () => {
         />
       </label>
 
-      {/* "Keep Me Signed In" Checkbox */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', width: '100%' }}>
         <input type="checkbox" id="rememberMe" style={{ marginRight: '8px' }} />
         <label htmlFor="rememberMe" style={{ fontSize: '0.9rem', color: '#333' }}>Keep Me Signed In</label>
       </div>
 
-      {/* Sign-In Button */}
       <button
         type="submit"
         style={{
@@ -64,10 +60,11 @@ const Login = () => {
         Sign In
       </button>
 
-      {/* Additional Links */}
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', fontSize: '0.85rem' }}>
         <a href="#" style={{ color: '#333', textDecoration: 'underline' }}>Forgot Password?</a>
-        <a href="#" style={{ color: '#333', textDecoration: 'underline' }}>Sign Up</a>
+        <a href="#" onClick={(e) => { e.preventDefault(); toggleSignUp(); }} style={{ color: '#333', textDecoration: 'underline' }}>
+          Sign Up
+        </a>
       </div>
     </form>
   );
