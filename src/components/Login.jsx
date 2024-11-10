@@ -1,17 +1,50 @@
-// src/components/Login.jsx
-
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';  // Import Link from react-router-dom
+import { Link, useNavigate } from 'react-router-dom';  // Import Link and useNavigate from react-router-dom
+import axios from 'axios';  // Import axios for making API requests
 import backgroundImage from '../assets/Landin.jpg';
 import logoImage from '../assets/platelogo.png'; // Import your logo image
 
 const Login = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();  // Initialize useNavigate for navigation
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    try {
+      // Prepare the data to be sent in the request
+      const data = { email, password };
+
+      // Make a POST request to the login API
+      const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', data, {
+        headers: {
+          'Content-Type': 'application/json', // Ensure the request is sent as JSON
+        },
+      });
+
+      // Assuming the response contains a token
+      const token = response.data.token;
+
+      // Store the token in localStorage
+      localStorage.setItem('token', token);
+
+      // Navigate to another page after successful login
+      navigate('/dashboard'); // Adjust the path as needed for your project
+
+    } catch (error) {
+      // Handle errors (e.g., invalid credentials, server errors)
+      console.error('Login failed:', error.response?.data || error.message);
+      setErrorMessage('Invalid email or password. Please try again.');
+    }
   };
 
   // Style for the main container to keep it fixed on the left
@@ -56,11 +89,18 @@ const Login = () => {
 
         <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '5px' }}>Sign In</h1>
 
+        {/* Show error message if login fails */}
+        {errorMessage && (
+          <p style={{ color: 'red', marginBottom: '10px' }}>{errorMessage}</p>
+        )}
+
         {/* Login form */}
-        <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <input
-            type="text"
-            placeholder="Username"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             style={{
               width: '95%',
               padding: '10px',
@@ -74,6 +114,8 @@ const Login = () => {
             <input
               type={showPassword ? 'text' : 'password'}
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               style={{
                 width: '95%',
                 padding: '10px',

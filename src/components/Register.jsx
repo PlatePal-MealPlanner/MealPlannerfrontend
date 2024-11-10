@@ -1,11 +1,55 @@
-// src/components/Register.jsx
-
 import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate from react-router-dom
+import axios from 'axios'; // Import axios for making HTTP requests
 import backgroundImage from '../assets/Landin.jpg';  // Import your background image
 import logoImage from '../assets/platelogo.png'; // Import your logo image
 
 const Register = () => {
+  const navigate = useNavigate(); // Hook for programmatically navigating
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    // Create a FormData object from the form
+    const formData = new FormData(e.target);
+  
+    const password = formData.get('password');
+    const confirmPassword = formData.get('confirmPassword');
+  
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+  
+    // Prepare data for API request
+    const data = {
+      fname: formData.get('firstName'),
+      lname: formData.get('lastName'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+    };
+  
+    try {
+      // Send a POST request to the registration API with headers
+      const response = await axios.post('http://localhost:8080/api/v1/auth/register', data, {
+        headers: {
+          'Content-Type': 'application/json', // Ensure the request is sent as JSON
+        },
+      });
+  
+      // Handle successful registration
+      alert('Registration successful!');
+      localStorage.setItem('token', response.data.token); // Save token to local storage
+      navigate('/login'); // Navigate to login page after registration
+    } catch (error) {
+      // Handle errors (e.g., network issues, server errors)
+      console.error('Registration failed:', error.response?.data || error.message);
+      alert('Registration failed. Please try again.');
+    }
+  };
+  
+
   // Shared container style (same as Login.jsx)
   const containerStyle = {
     backgroundColor: 'rgba(255, 255, 255, 0.7)', // Slightly less opacity to let the background show
@@ -49,11 +93,13 @@ const Register = () => {
         <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '5px' }}>Sign Up</h1>
 
         {/* Register form */}
-        <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <div style={{ display: 'flex', width: '103%', gap: '10px', marginBottom: '15px' }}>
             <input
               type="text"
+              name="firstName"
               placeholder="First Name"
+              required
               style={{
                 flex: '1',
                 padding: '10px',
@@ -64,7 +110,9 @@ const Register = () => {
             />
             <input
               type="text"
+              name="lastName"
               placeholder="Last Name"
+              required
               style={{
                 flex: '1',
                 padding: '10px',
@@ -77,7 +125,9 @@ const Register = () => {
 
           <input
             type="email"
+            name="email"
             placeholder="Email"
+            required
             style={{
               width: '100%',
               padding: '10px',
@@ -89,7 +139,9 @@ const Register = () => {
           />
           <input
             type="password"
+            name="password"
             placeholder="Password"
+            required
             style={{
               width: '100%',
               padding: '10px',
@@ -101,7 +153,9 @@ const Register = () => {
           />
           <input
             type="password"
+            name="confirmPassword"
             placeholder="Confirm Password"
+            required
             style={{
               width: '100%',
               padding: '10px',
