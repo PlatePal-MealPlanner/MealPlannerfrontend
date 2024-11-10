@@ -1,8 +1,16 @@
 // src/components/Login.jsx
 
-import React from 'react';
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const Login = ({ toggleSignUp }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
+  };
+
   return (
     <form style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <label style={{ width: '100%', marginBottom: '10px', textAlign: 'left' }}>
@@ -21,10 +29,10 @@ const Login = ({ toggleSignUp }) => {
         />
       </label>
 
-      <label style={{ width: '100%', marginBottom: '10px', textAlign: 'left' }}>
+      <label style={{ width: '100%', marginBottom: '10px', textAlign: 'left', position: 'relative' }}>
         <p style={{ fontSize: '0.9rem', fontWeight: 'bold', color: '#333' }}>Password</p>
         <input
-          type="password"
+          type={showPassword ? 'text' : 'password'}
           style={{
             width: '100%',
             padding: '10px',
@@ -35,6 +43,23 @@ const Login = ({ toggleSignUp }) => {
           }}
           placeholder="Enter your password"
         />
+
+        {/* Show/Hide Password Icon */}
+        <button
+          type="button"
+          onClick={togglePasswordVisibility}
+          style={{
+            position: 'absolute',
+            right: '10px',
+            top: '38px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#888',
+          }}
+        >
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+        </button>
       </label>
 
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', width: '100%' }}>
