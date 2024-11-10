@@ -1,9 +1,18 @@
 import React from 'react';
-import LandingPage from './components/LandingPage'; // Import LandingPage component
-import './styles.css';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';  // Use Routes instead of Switch
+import Login from './components/Login';
+import Register from './components/Register';
 
-function App() {
-  return <LandingPage />; // Render LandingPage for now
-}
+const App = () => {
+  return (
+    <Router>
+      <Routes>  {/* Use Routes instead of Switch */}
+        <Route path="/login" element={<Login />} />  {/* Use element instead of component */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<Login />} />  {/* Default to Login */}
+      </Routes>
+    </Router>
+  );
+};
 
 export default App;
