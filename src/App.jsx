@@ -1,9 +1,15 @@
 import React from 'react';
-import LandingPage from './components/LandingPage'; // Import LandingPage component
-import './styles.css';
+import TheRoutes from './components/TheRoutes'; // Import LandingPage component
+import './App.css';
 
 function App() {
-  return <LandingPage />; // Render LandingPage for now
+
+  return (
+    <>
+     <TheRoutes/>
+    </>
+  )
 }
 
-export default App;
+export default App
+
