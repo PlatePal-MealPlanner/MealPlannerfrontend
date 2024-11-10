@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate } from 'react-router-dom';  // Import Link and useNavigate from react-router-dom
-import axios from 'axios';  // Import axios for making API requests
+import { Link, useNavigate } from 'react-router-dom';  
+import axios from 'axios'; 
 import backgroundImage from '../assets/Landin.jpg';
-import logoImage from '../assets/platelogo.png'; // Import your logo image
+import logoImage from '../assets/platelogo.png'; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();  // Initialize useNavigate for navigation
+  const navigate = useNavigate();  
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
@@ -21,39 +21,34 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      // Prepare the data to be sent in the request
+
       const data = { email, password };
 
-      // Make a POST request to the login API
       const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', data, {
         headers: {
-          'Content-Type': 'application/json', // Ensure the request is sent as JSON
+          'Content-Type': 'application/json', 
         },
       });
 
-      // Assuming the response contains a token
       const token = response.data.token;
 
-      // Store the token in localStorage
       localStorage.setItem('token', token);
 
-      // Navigate to another page after successful login
-      navigate('/dashboard'); // Adjust the path as needed for your project
+ 
+      navigate('/Home'); 
 
     } catch (error) {
-      // Handle errors (e.g., invalid credentials, server errors)
       console.error('Login failed:', error.response?.data || error.message);
       setErrorMessage('Invalid email or password. Please try again.');
     }
   };
 
-  // Style for the main container to keep it fixed on the left
   const containerStyle = {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)', // Slightly less opacity to let the background show
+    backgroundColor: 'rgba(255, 255, 255, 0.7)', 
     padding: '40px',
     borderRadius: '30px',
-    width: '650px', // Reduced width for a smaller form
-    minHeight: '700px', // Adjusted height
+    width: '650px', 
+    minHeight: '700px', 
     textAlign: 'center',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     display: 'flex',
@@ -61,9 +56,9 @@ const Login = () => {
     justifyContent: 'center',
     alignItems: 'center',
     position: 'fixed',
-    left: '30px',  // Fixed to the left side of the screen
+    left: '30px', 
     top: '50%',
-    transform: 'translateY(-50%)', // Center the form vertically
+    transform: 'translateY(-50%)', 
   };
 
   return (
@@ -76,7 +71,7 @@ const Login = () => {
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'left',  // Align the content to the left
+        justifyContent: 'left',  
       }}
     >
       <div style={containerStyle}>
