@@ -1,0 +1,92 @@
+/* Register.css */
+
+.container {
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 40px;
+  border-radius: 30px;
+  width: 650px;
+  min-height: 700px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.logo {
+  width: 200px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.input-group {
+  display: flex;
+  width: 103%;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.input-field {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #88c057;
+  font-size: 1rem;
+}
+
+.input-field:first-child {
+  flex: 1;
+}
+
+.input-field:last-child {
+  flex: 1;
+}
+
+.submit-btn {
+  width: 35%;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #4caf50;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.link {
+  font-size: 0.85rem;
+}
+
+.link a {
+  color: #333;
+  text-decoration: underline;
+}
+
+.page-background {
+  background-image: url("../assets/Landin.jpg");
+  background-size: cover;
+  background-position: center;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+}
