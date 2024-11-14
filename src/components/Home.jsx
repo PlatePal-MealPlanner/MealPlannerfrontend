@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/Landin.jpg'; // Background image
+import backgroundImage from '../assets/leafbg.png'; // Background image
 import logoImage from '../assets/platelogo.png'; // Logo image
 import '../CSS/Home.css'; // Import the CSS file
 

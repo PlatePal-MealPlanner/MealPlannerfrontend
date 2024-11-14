@@ -1,20 +1,57 @@
-import React from 'react';
-import '../CSS/Recipe.css'; // Create this CSS file for styling if needed
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import backgroundImage from '../assets/leafbg.png'; // Background image
+import logoImage from '../assets/platelogo.png'; // Logo image
+import '../CSS/Recipe.css';
 
 const Recipe = () => {
+  const [recipes, setRecipes] = useState([]);
+
+  // Fetch recipe data from the API/database
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await fetch('/api/recipes'); // Replace with your API endpoint
+        const data = await response.json();
+        setRecipes(data);
+      } catch (error) {
+        console.error('Error fetching recipes:', error);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
   return (
-    <div className="recipe-container">
-      <h1>Recipe</h1>
-      <p>Explore our diverse collection of recipes to plan your meals for the week.</p>
+    <div
+      className="recipe-container"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
+    >
+      {/* Header Section */}
+      <header className="recipe-header" style={{ backgroundColor: '#FEFF9F' }}>
+        <Link to="/home" className="home-logo-link">
+          <img src={logoImage} alt="Logo" className="home-logo" />
+        </Link>
+        
+        <nav className="home-nav">
+          <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
+          <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
+          <Link to="/recipe" className="home-nav-link">Recipe</Link>
+          <Link to="/profile" className="home-nav-link">User Profile</Link>
+        </nav>
+      </header>
+
+      {/* Main content of the recipe page */}
       <div className="recipe-content">
-        <h2>Recipe List</h2>
-        <ul>
-          <li>Quick Cooking Oats</li>
-          <li>Green Goddess Farro Bowl</li>
-          <li>Cabbage Roll Casserole</li>
-          <li>Crispy Baked Catfish</li>
-          {/* Add more recipes or fetch them from a database/API */}
-        </ul>
+        <h1>Recipe Collection</h1>
+        <div className="recipe-grid">
+          {recipes.map(recipe => (
+            <Link to={`/recipe/${recipe.id}`} key={recipe.id} className="recipe-card">
+              <img src={recipe.imageURL} alt={recipe.title} className="recipe-image" />
+              <h3 className="recipe-title">{recipe.title}</h3>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
