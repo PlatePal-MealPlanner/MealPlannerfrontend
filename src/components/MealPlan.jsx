@@ -1,10 +1,25 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/leafbg.png'; // Background image
 import logoImage from '../assets/platelogo.png'; // Logo image
+import dropdownImage from '../assets/dropdown.png'; // Dropdown image
 import '../CSS/MealPlan.css'; // Import the CSS file
 
 const MealPlan = () => {
+  const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // Toggle dropdown open state
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  // Function to handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear token from localStorage
+    navigate('/login'); // Redirect to login page
+  };
+
   return (
     <div
       className="mealplan-container"
@@ -22,7 +37,24 @@ const MealPlan = () => {
           <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
           <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
           <Link to="/recipe" className="home-nav-link">Recipe</Link>
-          <Link to="/profile" className="home-nav-link">User Profile</Link>
+          
+          {/* Profile Dropdown */}
+          <div className="profile-dropdown">
+            <img
+              src={dropdownImage}
+              alt="User Profile"
+              className="dropdown-button"
+              onClick={toggleDropdown}
+            />
+            {isDropdownOpen && (
+              <div className="dropdown-menu">
+                <Link to="/profile" className="dropdown-item">View Profile</Link>
+                <button onClick={handleLogout} className="dropdown-item">
+                  Log Out
+                </button>
+              </div>
+            )}
+          </div>
         </nav>
       </header>
 
