@@ -1,55 +1,59 @@
 import React from 'react';
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
-import backgroundImage from '../assets/Landin.jpg'; // Your background image
-import logoImage from '../assets/platelogo.png'; // Your logo image
+import { Link, useNavigate } from 'react-router-dom';
+import backgroundImage from '../assets/Landin.jpg'; // Background image
+import logoImage from '../assets/platelogo.png'; // Logo image
+import '../CSS/Home.css'; // Import the CSS file
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  // Function to handle logout
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Clear token from localStorage
+    navigate('/login'); // Redirect to login page
+  };
+
   return (
     <div
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',  // Center content
-        flexDirection: 'column',   // Align items vertically
-      }}
+      className="home-container"
+      style={{ backgroundImage: `url(${backgroundImage})` }}
     >
-      {/* Logo Image */}
-      <img
-        src={logoImage}
-        alt="Logo"
-        style={{ width: '150px', marginBottom: '20px' }} // Adjust logo size as needed
-      />
+      {/* Header: Logo and Navigation */}
+      <header className="home-header">
+        {/* Clickable Logo */}
+        <Link to="/home" className="home-logo-link">
+          <img
+            src={logoImage}
+            alt="Logo"
+            className="home-logo"
+          />
+        </Link>
 
-      {/* Welcome Text */}
-      <h1 style={{ fontSize: '3rem', fontWeight: 'bold', color: '#fff', marginBottom: '20px' }}>
-        Welcome to Our Platform!
-      </h1>
-      <p style={{ fontSize: '1.2rem', color: '#fff', marginBottom: '30px' }}>
-        Please Sign In to continue.
-      </p>
+        {/* Navigation Menu */}
+        <nav className="home-nav">
+          <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
+          <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
+          <Link to="/recipe" className="home-nav-link">Recipe</Link>
+          <Link to="/profile" className="home-nav-link">User Profile</Link>
+        </nav>
+      </header>
 
-      {/* Sign In Button */}
-      <Link to="/login">
+      {/* Welcome Text and Logout Button */}
+      <div className="home-content">
+        <h1 className="home-title">Welcome to Our Platform!</h1>
+        <p className="home-subtitle">
+          Explore our meal plans, shopping lists, recipes, and manage your profile. 
+          Please sign in to continue enjoying our services.
+        </p>
+
+        {/* Log Out Button */}
         <button
-          style={{
-            padding: '12px 30px',
-            fontSize: '1.2rem',
-            backgroundColor: '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-          }}
+          onClick={handleLogout}
+          className="home-logout-btn"
         >
-          Sign In
+          Log Out
         </button>
-      </Link>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,20 @@
+.recipe-container {
+  padding: 40px;
+  background-color: #fff9e6;
+}
+
+.recipe-content h2 {
+  color: #ff7043;
+}
+
+.recipe-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.recipe-content li {
+  background-color: #ffe0b2;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
