@@ -1,11 +1,9 @@
-/* Register.css */
-
 .container {
   background-color: rgba(255, 255, 255, 0.7);
   padding: 40px;
   border-radius: 30px;
-  width: 650px;
-  min-height: 700px;
+  width: 750px;
+  min-height: 800px;
   text-align: center;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   display: flex;
@@ -26,36 +24,31 @@
 .title {
   font-size: 2.5rem;
   font-weight: bold;
-  margin-bottom: 5px;
+  margin-bottom: 25px;
 }
 
 .form {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
+  width: 110%;
 }
 
 .input-group {
   display: flex;
-  width: 103%;
+  justify-content: space-between;  /* Ensures space is evenly distributed between the input fields */
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 4.5px;
+  width: 73.1%;  /* Ensures it takes the full width of the parent container */
 }
 
 .input-field {
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 5px;
   border: 1px solid #88c057;
+  margin-bottom: 15px;
   font-size: 1rem;
-}
-
-.input-field:first-child {
-  flex: 1;
-}
-
-.input-field:last-child {
-  flex: 1;
+  width: 70%;  /* Adjust width to fit within the parent container with some space between fields */
 }
 
 .submit-btn {
