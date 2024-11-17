@@ -8,6 +8,7 @@ import ProtectedRoute from './components/ProtectedRoute'; // Protected Route com
 import MealPlan from './components/MealPlan';
 import Recipe from './components/Recipe';
 import ShoppingList from './components/ShoppingList';
+import UserProfile from './components/UserProfile';
 
 const App = () => {
   return (
@@ -50,6 +51,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <ShoppingList />
+            </ProtectedRoute>
+          }
+        />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <UserProfile />
             </ProtectedRoute>
           }
         />
