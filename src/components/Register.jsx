@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import backgroundImage from '../assets/Landin.jpg';
 import logoImage from '../assets/platelogo.png';
-import '../CSS/Register.css'; // Import the new CSS file
+import '../CSS/Register.css'; 
 
 const Register = () => {
   const navigate = useNavigate();
