@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActionArea,
+} from '@mui/material';
 import backgroundImage from '../assets/leafbg.png'; // Background image
-import logoImage from '../assets/platelogo.png'; // Logo image
-import dropdownImage from '../assets/dropdown.png'; // Dropdown image
-import '../CSS/Recipe.css'; // Import the CSS file
+import NavBar from '../components/NavBar'; // Reusable NavBar component
 
 const Recipe = () => {
   const [recipes, setRecipes] = useState([]);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   // Fetch recipe data from the API/database
@@ -25,68 +32,71 @@ const Recipe = () => {
     fetchRecipes();
   }, []);
 
-  // Toggle dropdown open state
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
-  };
-
-  // Function to handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Clear token from localStorage
-    navigate('/login'); // Redirect to login page
-  };
-
   return (
-    <div
-      className="recipe-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+    <Box
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        color: '#333',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
     >
-      {/* Header Section */}
-      <header className="recipe-header" style={{ backgroundColor: '#FEFF9F' }}>
-        {/* Logo or Home Link */}
-        <Link to="/home" className="home-logo-link">
-          <img src={logoImage} alt="Logo" className="home-logo" />
-        </Link>
+      {/* NavBar Component */}
+      <NavBar />
 
-        {/* Navigation bar */}
-        <nav className="home-nav">
-          <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
-          <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
-          <Link to="/recipe" className="home-nav-link">Recipe</Link>
+      {/* Main Content */}
+      <Container
+        sx={{
+          textAlign: 'center',
+          paddingTop: '20px',
+        }}
+      >
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 4, color: '#fff' }}>
+          Recipe Collection
+        </Typography>
 
-          {/* Profile Dropdown */}
-          <div className="profile-dropdown">
-            <img
-              src={dropdownImage}
-              alt="User Profile"
-              className="dropdown-button"
-              onClick={toggleDropdown}
-            />
-            {isDropdownOpen && (
-              <div className="dropdown-menu">
-                <Link to="/profile" className="dropdown-item">View Profile</Link>
-                <button onClick={handleLogout} className="dropdown-item">
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        </nav>
-      </header>
-
-      {/* Main content of the recipe page */}
-      <div className="recipe-content">
-        <h1>Recipe Collection</h1>
-        <div className="recipe-grid">
-          {recipes.map(recipe => (
-            <Link to={`/recipe/${recipe.id}`} key={recipe.id} className="recipe-card">
-              <img src={recipe.imageURL} alt={recipe.title} className="recipe-image" />
-              <h3 className="recipe-title">{recipe.title}</h3>
-            </Link>
+        {/* Recipe Grid */}
+        <Grid container spacing={4} justifyContent="center">
+          {recipes.map((recipe) => (
+            <Grid item xs={12} sm={6} md={4} key={recipe.id}>
+              <Card
+                sx={{
+                  borderRadius: '10px',
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                  transition: 'transform 0.3s ease',
+                  '&:hover': { transform: 'scale(1.05)' },
+                }}
+              >
+                <CardActionArea component={Link} to={`/recipe/${recipe.id}`}>
+                  <CardMedia
+                    component="img"
+                    height="150"
+                    image={recipe.imageURL}
+                    alt={recipe.title}
+                  />
+                  <CardContent>
+                    <Typography
+                      variant="h6"
+                      component="h3"
+                      sx={{
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {recipe.title}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
           ))}
-        </div>
-      </div>
-    </div>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 
