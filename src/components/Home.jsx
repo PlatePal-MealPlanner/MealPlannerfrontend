@@ -1,72 +1,185 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/leafbg.png'; // Background image
-import logoImage from '../assets/platelogo.png'; // Logo image
-import dropdownImage from '../assets/dropdown.png'; // Dropdown image
-import '../CSS/Home.css'; // Import the CSS file
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Card,
+  CardMedia,
+  CardContent,
+  CardActionArea,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+} from '@mui/material';
+import NavBar from '../components/NavBar'; 
+import backgroundImage from '../assets/leafbg.png';
+import axios from 'axios';
 
 const Home = () => {
-  const navigate = useNavigate();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [dishes, setDishes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState(null); 
 
-  // Toggle dropdown open state
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
+  // Fetch dishes from the backend
+  useEffect(() => {
+    const fetchDishes = async () => {
+      try {
+        const response = await axios.get('http://localhost:8080/api/dishes');
+        setDishes(response.data);
+      } catch (error) {
+        console.error('Error fetching dishes:', error);
+      } finally {
+        setLoading(false); 
+      }
+    };
+
+    fetchDishes();
+  }, []);
+
+  // Open the dialog and set the selected dish
+  const handleCardClick = (dish) => {
+    setSelectedDish(dish);
+    setDialogOpen(true);
   };
 
-  // Function to handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Clear token from localStorage
-    navigate('/login'); // Redirect to login page
+  // Close the dialog
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    setSelectedDish(null);
   };
 
   return (
-    <div
-      className="home-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+    <Box
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        overflowY: 'auto',
+        color: '#fff',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
-      {/* Header: Logo and Navigation */}
-      <header className="home-header" style={{ backgroundColor: '#FEFF9F' }}>
-        {/* Clickable Logo */}
-        <Link to="/home" className="home-logo-link">
-          <img src={logoImage} alt="Logo" className="home-logo" />
-        </Link>
+      {/* NavBar Component - Fixed Position */}
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000,
+        }}
+      >
+        <NavBar />
+      </Box>
 
-        {/* Navigation Menu */}
-        <nav className="home-nav">
-          <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
-          <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
-          <Link to="/recipe" className="home-nav-link">Recipe</Link>
+      {/* Main Content */}
+      <Container sx={{ textAlign: 'center', paddingTop: '20px', pb: '20px', flex: '1' }}>
+        <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 4 }}>
+          Welcome to Our Recipe Platform
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            maxWidth: '600px',
+            margin: '0 auto',
+            mb: 4,
+            fontSize: '1.2rem',
+          }}
+        >
+          Explore our collection of delicious dishes. Click on any dish to view the full recipe.
+        </Typography>
 
-          {/* Profile Dropdown */}
-          <div className="profile-dropdown">
-            <img
-              src={dropdownImage}
-              alt="User Profile"
-              className="dropdown-button"
-              onClick={toggleDropdown}
-            />
-            {isDropdownOpen && (
-              <div className="dropdown-menu">
-                <Link to="/profile" className="dropdown-item">View Profile</Link>
-                <button onClick={handleLogout} className="dropdown-item">
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        </nav>
-      </header>
+        {/* Loading Spinner */}
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <CircularProgress color="inherit" />
+          </Box>
+        ) : (
+          // Dishes Grid
+          <Grid container spacing={4} justifyContent="center">
+            {dishes.map((dish) => (
+              <Grid item xs={12} sm={6} md={4} key={dish.id}>
+                <Card
+                  sx={{
+                    borderRadius: '10px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                    transition: 'transform 0.3s ease',
+                    '&:hover': { transform: 'scale(1.05)' },
+                  }}
+                  onClick={() => handleCardClick(dish)} // Open dialog on card click
+                >
+                  <CardActionArea>
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={dish.image}
+                      alt={dish.title}
+                    />
+                    <CardContent>
+                      <Typography
+                        variant="h6"
+                        component="h3"
+                        sx={{
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {dish.title}
+                      </Typography>
+                    </CardContent>
+                  </CardActionArea>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
-      {/* Welcome Text and Logout Button */}
-      <div className="home-content">
-        <h1 className="home-title">Welcome to Our Platform!</h1>
-        <p className="home-subtitle">
-          Explore our meal plans, shopping lists, recipes, and manage your profile.
-          Please sign in to continue enjoying our services.
-        </p>
-      </div>
-    </div>
+        {/* Dish Dialog */}
+        <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+          <DialogTitle>{selectedDish?.title}</DialogTitle>
+          <DialogContent>
+            <Box sx={{ textAlign: 'center', mb: 2 }}>
+              <img
+                src={selectedDish?.image}
+                alt={selectedDish?.title}
+                style={{ width: '100%', borderRadius: '10px' }}
+              />
+            </Box>
+            <Typography variant="h6">Ingredients:</Typography>
+            <Typography>{selectedDish?.ingredients || 'Ingredients not available'}</Typography>
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              Description:
+            </Typography>
+            <Typography>{selectedDish?.description || 'Description not available'}</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => console.log('Add to Meal Plan:', selectedDish)}
+            >
+              Add to Meal Plan
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => console.log('Add to Shopping List:', selectedDish)}
+            >
+              Add to Shopping List
+            </Button>
+            <Button variant="outlined" color="error" onClick={handleCloseDialog}>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 
