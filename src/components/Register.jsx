@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import backgroundImage from '../assets/Landin.jpg';
@@ -7,6 +7,8 @@ import '../CSS/Register.css';
 
 const Register = () => {
   const navigate = useNavigate();
+  const [message, setMessage] = useState(''); // State for success or error message
+  const [messageType, setMessageType] = useState(''); // Type of message: 'success' or 'error'
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,7 +19,8 @@ const Register = () => {
     const confirmPassword = formData.get('confirmPassword');
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setMessage('Passwords do not match');
+      setMessageType('error');
       return;
     }
 
@@ -35,12 +38,16 @@ const Register = () => {
         },
       });
 
-      alert('Registration successful!');
+      setMessage('Registration successful! Redirecting to login...');
+      setMessageType('success');
       localStorage.setItem('token', response.data.token);
-      navigate('/login');
+
+      // Redirect after a short delay
+      setTimeout(() => navigate('/login'), 2000);
     } catch (error) {
       console.error('Registration failed:', error.response?.data || error.message);
-      alert('Registration failed. Please try again.');
+      setMessage('Registration failed. Please try again.');
+      setMessageType('error');
     }
   };
 
@@ -49,6 +56,13 @@ const Register = () => {
       <div className="container">
         <img src={logoImage} alt="Logo" className="logo" />
         <h1 className="title">Sign Up</h1>
+
+        {/* Display success or error message */}
+        {message && (
+          <div className={`message ${messageType === 'success' ? 'success' : 'error'}`}>
+            {message}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="form">
           <div className="input-group">
