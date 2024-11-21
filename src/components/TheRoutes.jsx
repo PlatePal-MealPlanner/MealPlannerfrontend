@@ -8,6 +8,7 @@ import ProtectedRoute from './ProtectedRoute'; // Protected Route component
 import MealPlan from './MealPlan';
 import Recipe from './Recipe';
 import ShoppingList from './ShoppingList';
+import UserProfile from './UserProfile';
 
 
 export default function TheRoutes() {
@@ -15,11 +16,12 @@ export default function TheRoutes() {
         <Routes>
             <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/Login" element={<Login />} />
+            <Route path="/Register" element={<Register />} />
             <Route path="/Home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-            <Route path="/Register" element={<ProtectedRoute><Register /></ProtectedRoute>} />
             <Route path="/MealPlan" element={<ProtectedRoute><MealPlan /></ProtectedRoute>} />
             <Route path="/Recipe" element={<ProtectedRoute><Recipe /></ProtectedRoute>} />
             <Route path="/ShoppingList" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
             <Route path="*" element={<h1>Nothing Here..</h1>} />
         </Routes>
     )
