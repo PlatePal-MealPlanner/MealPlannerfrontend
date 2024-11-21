@@ -29,9 +29,9 @@ const Login = () => {
           'Content-Type': 'application/json', 
         },
       });
-
       const token = response.data.token;
       localStorage.setItem('token', token);
+      console.log(token);
 
       navigate('/Home'); 
 
