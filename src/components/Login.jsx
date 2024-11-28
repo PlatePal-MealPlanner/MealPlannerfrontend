@@ -29,11 +29,23 @@ const Login = () => {
           'Content-Type': 'application/json', 
         },
       });
+      
       const token = response.data.token;
+      const role = response.data.role; // Extract role from the response
+
+      // Store token and role in local storage
       localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
       console.log(token);
 
-      navigate('/Home'); 
+      // Navigate based on role
+      if (role === 'ADMIN') {
+        navigate('/admin-dashboard'); // Replace with your actual admin dashboard route
+      } else if (role === 'USER') {
+        navigate('/Home'); // Replace with your actual home route
+      } else {
+        setErrorMessage('Invalid role. Please contact support.');
+      }
 
     } catch (error) {
       console.error('Login failed:', error.response?.data || error.message);
