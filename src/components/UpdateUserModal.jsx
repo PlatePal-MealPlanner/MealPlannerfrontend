@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Box,
+  Grid,
+} from '@mui/material';
 
 const UpdateUserModal = ({ user, onSave, onClose }) => {
   const [updatedUser, setUpdatedUser] = useState({});
 
-  // Initialize the modal with the selected user data
+  // Initialize modal with the selected user data
   useEffect(() => {
     if (user) {
-      console.log('Modal data:', user); // Debugging: check if user data is passed correctly
-      setUpdatedUser(user); // Initialize the form with current user data
+      setUpdatedUser(user);
     }
   }, [user]);
 
@@ -21,54 +30,70 @@ const UpdateUserModal = ({ user, onSave, onClose }) => {
 
   const handleSubmit = () => {
     if (updatedUser.userId) {
-      onSave(updatedUser); // Pass updated user data to parent component
+      onSave(updatedUser);
     } else {
       console.error('User ID is missing!');
     }
   };
 
   return (
-    <div className="modal">
-      <h2>Update User</h2>
-      <form>
-        <label>First Name:</label>
-        <input
-          type="text"
-          name="fname"
-          value={updatedUser.fname || ''}
-          onChange={handleChange}
-        />
-        <br />
-        <label>Last Name:</label>
-        <input
-          type="text"
-          name="lname"
-          value={updatedUser.lname || ''}
-          onChange={handleChange}
-        />
-        <br />
-        <label>Email:</label>
-        <input
-          type="email"
-          name="email"
-          value={updatedUser.email || ''}
-          onChange={handleChange}
-        />
-        <br />
-        <label>Role:</label>
-        <select
-          name="role"
-          value={updatedUser.role || ''}
-          onChange={handleChange}
+    <Dialog open={!!user} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Update User Profile</DialogTitle>
+      <DialogContent>
+        <Box
+          component="form"
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 3,
+            mt: 2,
+          }}
         >
-          <option value="ADMIN">Admin</option>
-          <option value="USER">User</option>
-        </select>
-        <br />
-        <button type="button" onClick={handleSubmit}>Save</button>
-        <button type="button" onClick={onClose}>Close</button>
-      </form>
-    </div>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="First Name"
+                name="fname"
+                value={updatedUser.fname || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label="Last Name"
+                name="lname"
+                value={updatedUser.lname || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+              />
+            </Grid>
+          </Grid>
+          <TextField
+            label="Email"
+            name="email"
+            value={updatedUser.email || ''}
+            onChange={handleChange}
+            type="email"
+            fullWidth
+            required
+            variant="outlined"
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} variant="outlined" color="secondary">
+          Cancel
+        </Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary">
+          Save Changes
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

@@ -1,27 +1,43 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import UpdateUserModal from './UpdateUserModal'; // Import the UpdateUserModal component
+import UpdateUserModal from './UpdateUserModal';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const AdminDashboard = () => {
-  const [data, setData] = useState([]); // State to store users
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
-  const [showModal, setShowModal] = useState(false); // Modal visibility
-  const [selectedUser, setSelectedUser] = useState(null); // Currently selected user for update
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const navigate = useNavigate();
 
   // Fetch users from the backend
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token'); // Get token from local storage
-        const response = await axios.get(
-          'http://localhost:8080/api/v1/admin/users', // Adjust the URL based on your backend
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setData(response.data);
         setLoading(false);
       } catch (err) {
@@ -34,57 +50,55 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Handle user deletion
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:8080/api/v1/admin/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setData(data.filter((user) => user.userId !== id)); // Remove user from the state
+      setData(data.filter((user) => user.userId !== id));
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user.');
     }
   };
 
-  // Open modal for updating a user
   const handleOpenModal = (user) => {
-    console.log('Opening modal with user:', user); // Debugging: check if userId exists here
-    setSelectedUser(user); // Set the user to update
-    setShowModal(true); // Show the modal
+    setSelectedUser(user);
+    setShowModal(true);
   };
 
-  // Close modal
   const handleCloseModal = () => {
-    setShowModal(false); // Hide the modal
-    setSelectedUser(null); // Clear the selected user
+    setShowModal(false);
+    setSelectedUser(null);
   };
 
-  // Handle user update from the modal
   const handleUpdate = async (updatedUser) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`, // Ensure userId is passed in the URL
+      await axios.put(
+        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`,
         updatedUser,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      const updatedData = data.map((user) =>
-        user.userId === updatedUser.userId ? response.data : user
-      );
-      setData(updatedData); // Update the user in the UI
-      handleCloseModal(); // Close the modal
+      const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setData(response.data);
+      handleCloseModal();
     } catch (err) {
       console.error('Error updating user:', err);
       setError('Failed to update user.');
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const handleNavigation = (route) => {
+    navigate(route);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -92,42 +106,78 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <h1>Admin Dashboard</h1>
-      <table border="1" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => (
-            <tr key={item.userId}>
-              <td>{item.userId}</td>
-              <td>{item.fname}</td>
-              <td>{item.lname}</td>
-              <td>{item.email}</td>
-              <td>{item.role}</td>
-              <td>
-                <button onClick={() => handleOpenModal(item)}>Update</button>
-                <button onClick={() => handleDelete(item.userId)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* AppBar */}
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Admin Dashboard
+          </Typography>
+          <Button color="inherit" onClick={() => handleNavigation('/recipes')}>
+            Recipes
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
+            Meal Plans
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/shopping-list')}>
+            Shopping List
+          </Button>
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      {/* Render UpdateUserModal if showModal is true */}
+      {/* Table */}
+      <TableContainer component={Paper} sx={{ margin: '20px auto', maxWidth: '80%' }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>First Name</strong></TableCell>
+              <TableCell><strong>Last Name</strong></TableCell>
+              <TableCell><strong>Email</strong></TableCell>
+              <TableCell><strong>Role</strong></TableCell>
+              <TableCell align="right"><strong>Actions</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((user) => (
+              <TableRow key={user.userId}>
+                <TableCell>{user.fname}</TableCell>
+                <TableCell>{user.lname}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell align="right">
+                  <IconButton color="primary" onClick={() => handleOpenModal(user)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDelete(user.userId)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Update Modal */}
       {showModal && (
-        <UpdateUserModal
-          user={selectedUser}
-          onSave={handleUpdate}
-          onClose={handleCloseModal}
-        />
+        <Dialog open={showModal} onClose={handleCloseModal}>
+          <DialogTitle>Update User</DialogTitle>
+          <UpdateUserModal
+            user={selectedUser}
+            onSave={handleUpdate}
+            onClose={handleCloseModal}
+          />
+          <DialogActions>
+            <Button onClick={handleCloseModal} color="secondary">
+              Cancel
+            </Button>
+          </DialogActions>
+        </Dialog>
       )}
     </div>
   );
