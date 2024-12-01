@@ -6,13 +6,34 @@
   background-color: #f0f2f5;
   padding: 0 20px;
 }
+.profile-background {
+  width: 100%;
+  min-height: calc(100vh - 64px); /* Adjust based on your NavBar height */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-repeat: no-repeat;
+  background-attachment: fixed; /* For a parallax effect, optional */
+}
+.profile-container,
+.password-container {
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for contrast */
+    padding: 20px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 80%;
+    max-width: 600px;
+}
 
 .profile-container {
-  width: 100%;
-  max-width: 400px;
+  width: 400px;
   background-color: #fff;
   border-radius: 8px;
-  padding: 20px;
+  padding: 50px;
+  padding-right: 60px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #ddd;
 }
@@ -48,7 +69,7 @@ h2 {
 }
 
 .submit-btn {
-  width: 100%;
+  width: 106%;
   padding: 10px;
   background-color: #4caf50;
   color: white;
@@ -70,8 +91,10 @@ h2 {
   margin-bottom: 15px;
 }
 .password-container {
+  width: 400px;
   margin-top: 20px;
-  padding: 20px;
+  padding: 50px;
+  padding-right: 60px;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
   border-radius: 5px;
