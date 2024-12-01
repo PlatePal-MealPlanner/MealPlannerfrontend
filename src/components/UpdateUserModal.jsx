@@ -1,82 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const UpdateUserModal = ({ user, onSave, onClose }) => {
-  const [updatedUser, setUpdatedUser] = useState({ ...user });
+  const [updatedUser, setUpdatedUser] = useState({});
 
-  const handleInputChange = (e) => {
+  // Initialize the modal with the selected user data
+  useEffect(() => {
+    if (user) {
+      console.log('Modal data:', user); // Debugging: check if user data is passed correctly
+      setUpdatedUser(user); // Initialize the form with current user data
+    }
+  }, [user]);
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setUpdatedUser((prevState) => ({
-      ...prevState,
+    setUpdatedUser((prev) => ({
+      ...prev,
       [name]: value,
     }));
   };
 
   const handleSubmit = () => {
-    onSave(updatedUser); // Trigger the save callback
+    if (updatedUser.userId) {
+      onSave(updatedUser); // Pass updated user data to parent component
+    } else {
+      console.error('User ID is missing!');
+    }
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'white',
-        padding: '20px',
-        border: '1px solid #ccc',
-        borderRadius: '8px',
-        zIndex: 1000,
-      }}
-    >
+    <div className="modal">
       <h2>Update User</h2>
-      <form onSubmit={(e) => e.preventDefault()}>
-        <div>
-          <label>First Name:</label>
-          <input
-            type="text"
-            name="fName"
-            value={updatedUser.fName}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label>Last Name:</label>
-          <input
-            type="text"
-            name="lName"
-            value={updatedUser.lName}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label>Email:</label>
-          <input
-            type="email"
-            name="email"
-            value={updatedUser.email}
-            onChange={handleInputChange}
-          />
-        </div>
-        <div>
-          <label>Role:</label>
-          <select
-            name="role"
-            value={updatedUser.role}
-            onChange={handleInputChange}
-          >
-            <option value="ADMIN">Admin</option>
-            <option value="USER">User</option>
-          </select>
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <button type="button" onClick={handleSubmit}>
-            Save
-          </button>
-          <button type="button" onClick={onClose}>
-            Cancel
-          </button>
-        </div>
+      <form>
+        <label>First Name:</label>
+        <input
+          type="text"
+          name="fname"
+          value={updatedUser.fname || ''}
+          onChange={handleChange}
+        />
+        <br />
+        <label>Last Name:</label>
+        <input
+          type="text"
+          name="lname"
+          value={updatedUser.lname || ''}
+          onChange={handleChange}
+        />
+        <br />
+        <label>Email:</label>
+        <input
+          type="email"
+          name="email"
+          value={updatedUser.email || ''}
+          onChange={handleChange}
+        />
+        <br />
+        <label>Role:</label>
+        <select
+          name="role"
+          value={updatedUser.role || ''}
+          onChange={handleChange}
+        >
+          <option value="ADMIN">Admin</option>
+          <option value="USER">User</option>
+        </select>
+        <br />
+        <button type="button" onClick={handleSubmit}>Save</button>
+        <button type="button" onClick={onClose}>Close</button>
       </form>
     </div>
   );

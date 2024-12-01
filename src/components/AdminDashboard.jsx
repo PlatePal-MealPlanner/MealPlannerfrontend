@@ -13,12 +13,15 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const token = localStorage.getItem('token'); // Get token from local storage
+        const response = await axios.get(
+          'http://localhost:8080/api/v1/admin/users', // Adjust the URL based on your backend
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         setData(response.data);
         setLoading(false);
       } catch (err) {
@@ -40,7 +43,7 @@ const AdminDashboard = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setData(data.filter((user) => user.id !== id));
+      setData(data.filter((user) => user.userId !== id)); // Remove user from the state
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user.');
@@ -49,6 +52,7 @@ const AdminDashboard = () => {
 
   // Open modal for updating a user
   const handleOpenModal = (user) => {
+    console.log('Opening modal with user:', user); // Debugging: check if userId exists here
     setSelectedUser(user); // Set the user to update
     setShowModal(true); // Show the modal
   };
@@ -64,7 +68,7 @@ const AdminDashboard = () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.put(
-        `http://localhost:8080/api/v1/admin/users/${updatedUser.id}`,
+        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`, // Ensure userId is passed in the URL
         updatedUser,
         {
           headers: {
@@ -73,7 +77,7 @@ const AdminDashboard = () => {
         }
       );
       const updatedData = data.map((user) =>
-        user.id === updatedUser.id ? response.data : user
+        user.userId === updatedUser.userId ? response.data : user
       );
       setData(updatedData); // Update the user in the UI
       handleCloseModal(); // Close the modal
@@ -102,7 +106,7 @@ const AdminDashboard = () => {
         </thead>
         <tbody>
           {data.map((item) => (
-            <tr key={item.id}>
+            <tr key={item.userId}>
               <td>{item.userId}</td>
               <td>{item.fname}</td>
               <td>{item.lname}</td>
@@ -110,7 +114,7 @@ const AdminDashboard = () => {
               <td>{item.role}</td>
               <td>
                 <button onClick={() => handleOpenModal(item)}>Update</button>
-                <button onClick={() => handleDelete(item.id)}>Delete</button>
+                <button onClick={() => handleDelete(item.userId)}>Delete</button>
               </td>
             </tr>
           ))}
