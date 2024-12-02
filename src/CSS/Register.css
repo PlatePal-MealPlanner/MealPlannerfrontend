@@ -36,10 +36,10 @@
 
 .input-group {
   display: flex;
-  justify-content: space-between;  /* Ensures space is evenly distributed between the input fields */
+  justify-content: space-between; /* Ensures space is evenly distributed between the input fields */
   gap: 10px;
   margin-bottom: 4.5px;
-  width: 73.1%;  /* Ensures it takes the full width of the parent container */
+  width: 73.1%; /* Ensures it takes the full width of the parent container */
 }
 
 .input-field {
@@ -48,7 +48,7 @@
   border: 1px solid #88c057;
   margin-bottom: 15px;
   font-size: 1rem;
-  width: 70%;  /* Adjust width to fit within the parent container with some space between fields */
+  width: 70%; /* Adjust width to fit within the parent container with some space between fields */
 }
 
 .submit-btn {
@@ -82,4 +82,17 @@
   display: flex;
   align-items: center;
   justify-content: left;
+}
+.message {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.message.success {
+  color: green;
+}
+
+.message.error {
+  color: red;
 }

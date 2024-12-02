@@ -1,79 +1,128 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import backgroundImage from '../assets/leafbg.png'; // Background image
-import logoImage from '../assets/platelogo.png'; // Logo image
-import dropdownImage from '../assets/dropdown.png'; // Dropdown image
-import '../CSS/MealPlan.css'; // Import the CSS file
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  CircularProgress,
+} from "@mui/material";
+import axios from "axios";
+import backgroundImage from "../assets/leafbg.png"; // Background image
+import NavBar from "../components/NavBar"; // NavBar component
 
 const MealPlan = () => {
-  const navigate = useNavigate();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [mealPlans, setMealPlans] = useState([]); // State for meal plans
+  const [loading, setLoading] = useState(true); // Loading indicator
+  const [error, setError] = useState(null); // Error state
 
-  // Toggle dropdown open state
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => !prev);
+  // Fetch meal plans from the backend
+  const fetchMealPlans = async () => {
+    try {
+      const token = localStorage.getItem("jwtToken"); // Adjust according to your storage logic
+      const response = await axios.get("http://localhost:8080/api/meal-plans", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setMealPlans(response.data);
+    } catch (error) {
+      console.error("Error fetching meal plans:", error);
+      setError("Failed to fetch meal plans. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // Function to handle logout
-  const handleLogout = () => {
-    localStorage.removeItem('token'); // Clear token from localStorage
-    navigate('/login'); // Redirect to login page
-  };
+  
 
   return (
-    <div
-      className="mealplan-container"
-      style={{ backgroundImage: `url(${backgroundImage})` }} // Set the background image inline
+    <Box
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        color: "#fff",
+        display: "flex",
+        flexDirection: "column",
+      }}
     >
-      {/* Header Section */}
-      <header className="mealplan-header" style={{ backgroundColor: '#FEFF9F' }}>
-        {/* Logo or Home Link */}
-        <Link to="/home" className="home-logo-link">
-          <img src={logoImage} alt="Logo" className="home-logo" />
-        </Link>
-        
-        {/* Navigation bar */}
-        <nav className="home-nav">
-          <Link to="/mealplan" className="home-nav-link">Meal Plan</Link>
-          <Link to="/shoppinglist" className="home-nav-link">Shopping List</Link>
-          <Link to="/recipe" className="home-nav-link">Recipe</Link>
-          
-          {/* Profile Dropdown */}
-          <div className="profile-dropdown">
-            <img
-              src={dropdownImage}
-              alt="User Profile"
-              className="dropdown-button"
-              onClick={toggleDropdown}
-            />
-            {isDropdownOpen && (
-              <div className="dropdown-menu">
-                <Link to="/profile" className="dropdown-item">View Profile</Link>
-                <button onClick={handleLogout} className="dropdown-item">
-                  Log Out
-                </button>
-              </div>
-            )}
-          </div>
-        </nav>
-      </header>
+      <NavBar />
+      <Container
+        sx={{
+          textAlign: "center",
+          paddingTop: "20px",
+        }}
+      >
+        <Typography variant="h3" component="h1" sx={{ fontWeight: "bold", mb: 2 }}>
+          Meal Plan
+        </Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            maxWidth: "600px",
+            margin: "0 auto",
+            mb: 4,
+            fontSize: "1.2rem",
+          }}
+        >
+          Welcome to your personalized meal plan. Here you can organize meals for your week.
+        </Typography>
 
-      {/* Main content of the meal plan page */}
-      <div className="mealplan-content">
-        <h1>Meal Plan</h1>
-        <p>Welcome to your personalized meal plan. Here you can organize meals for your week.</p>
-        <h2>Your Weekly Plan</h2>
-        <ul>
-          <li>Monday: Grilled Chicken Salad</li>
-          <li>Tuesday: Spaghetti Bolognese</li>
-          <li>Wednesday: Quinoa and Veggie Stir-fry</li>
-          <li>Thursday: Chicken Tacos</li>
-          <li>Friday: Salmon with Rice</li>
-          <li>Saturday: Beef Steak and Vegetables</li>
-          <li>Sunday: Pancakes with Fresh Fruit</li>
-        </ul>
-      </div>
-    </div>
+        {/* Loading Indicator */}
+        {loading && (
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+            <CircularProgress color="inherit" />
+          </Box>
+        )}
+
+        {/* Error Handling */}
+        {error && (
+          <Typography color="error" sx={{ mt: 4 }}>
+            {error}
+          </Typography>
+        )}
+
+        {/* Meal Plans List */}
+        {!loading && !error && mealPlans.length > 0 ? (
+          <List sx={{ maxWidth: 600, margin: "0 auto", textAlign: "left" }}>
+            {mealPlans.map((mealPlan) => (
+              <ListItem
+                key={mealPlan.mealPlanId}
+                sx={{
+                  backgroundColor: "#ffe0b2",
+                  marginBottom: "8px",
+                  borderRadius: "4px",
+                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <ListItemAvatar>
+                  <Avatar
+                    src={mealPlan.dish?.image || ""}
+                    alt={mealPlan.dish?.title || "Dish Image"}
+                    sx={{ width: 56, height: 56 }}
+                  />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={mealPlan.dish?.title || "Dish Name Not Available"}
+                  secondary={`Meal Date: ${new Date(mealPlan.mealDate).toLocaleDateString()}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+        ) : (
+          !loading &&
+          !error && (
+            <Typography color="textSecondary" sx={{ mt: 4 }}>
+              No meal plans found.
+            </Typography>
+          )
+        )}
+      </Container>
+    </Box>
   );
 };
 
