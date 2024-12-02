@@ -1,74 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+} from '@mui/material';
 
 const UpdateUserModal = ({ user, onSave, onClose }) => {
-  const [updatedUser, setUpdatedUser] = useState({});
-
-  // Initialize the modal with the selected user data
-  useEffect(() => {
-    if (user) {
-      console.log('Modal data:', user); // Debugging: check if user data is passed correctly
-      setUpdatedUser(user); // Initialize the form with current user data
-    }
-  }, [user]);
+  const [updatedUser, setUpdatedUser] = useState({ ...user });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUpdatedUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setUpdatedUser((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    if (updatedUser.userId) {
-      onSave(updatedUser); // Pass updated user data to parent component
-    } else {
-      console.error('User ID is missing!');
-    }
+  const handleSave = () => {
+    onSave(updatedUser);
   };
 
   return (
-    <div className="modal">
-      <h2>Update User</h2>
-      <form>
-        <label>First Name:</label>
-        <input
-          type="text"
+    <Dialog open onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Update User</DialogTitle>
+      <DialogContent>
+        <TextField
+          label="First Name"
           name="fname"
-          value={updatedUser.fname || ''}
+          value={updatedUser.fname}
           onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
-        <br />
-        <label>Last Name:</label>
-        <input
-          type="text"
+        <TextField
+          label="Last Name"
           name="lname"
-          value={updatedUser.lname || ''}
+          value={updatedUser.lname}
           onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
-        <br />
-        <label>Email:</label>
-        <input
-          type="email"
+        <TextField
+          label="Email"
           name="email"
-          value={updatedUser.email || ''}
+          type="email"
+          value={updatedUser.email}
           onChange={handleChange}
+          fullWidth
+          margin="normal"
         />
-        <br />
-        <label>Role:</label>
-        <select
+        <TextField
+          label="Role"
           name="role"
-          value={updatedUser.role || ''}
+          value={updatedUser.role}
           onChange={handleChange}
-        >
-          <option value="ADMIN">Admin</option>
-          <option value="USER">User</option>
-        </select>
-        <br />
-        <button type="button" onClick={handleSubmit}>Save</button>
-        <button type="button" onClick={onClose}>Close</button>
-      </form>
-    </div>
+          fullWidth
+          margin="normal"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="secondary">
+          Cancel
+        </Button>
+        <Button onClick={handleSave} color="primary">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

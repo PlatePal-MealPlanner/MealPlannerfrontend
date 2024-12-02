@@ -1,13 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import UpdateUserModal from './UpdateUserModal'; // Import UpdateUserModal
-import UpdateRecipeModal from './UpdateRecipeModal'; // Import UpdateRecipeModal
+import UpdateUserModal from './UpdateUserModal';
+import UpdateRecipeModal from './UpdateRecipeModal';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Dialog,
+  DialogActions,
+  TextField,
+  Box,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const AdminDashboard = () => {
-  const [data, setData] = useState([]); // State to store users
-  const [recipes, setRecipes] = useState([]); // State to store recipes
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(null); // Error state
+  const [data, setData] = useState([]); // Users data
+  const [recipes, setRecipes] = useState([]); // Recipes data
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [newRecipe, setNewRecipe] = useState({
     title: '',
     description: '',
@@ -18,37 +43,24 @@ const AdminDashboard = () => {
     mealType: '',
     ratingsAverage: '',
   });
+  const navigate = useNavigate();
 
-  const [showUserModal, setShowUserModal] = useState(false); // User modal visibility
-  const [selectedUser, setSelectedUser] = useState(null); // User for update
-  const [showRecipeModal, setShowRecipeModal] = useState(false); // Recipe modal visibility
-  const [selectedRecipe, setSelectedRecipe] = useState(null); // Recipe for update
-  const [validationMessage, setValidationMessage] = useState('');
   // Fetch users and recipes
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const userResponse = await axios.get(
-          'http://localhost:8080/api/v1/admin/users',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const [userResponse, recipeResponse] = await Promise.all([
+          axios.get('http://localhost:8080/api/v1/admin/users', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get('http://localhost:8080/api/recipe/allrecipe', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        const recipeResponse = await axios.get(
-          'http://localhost:8080/api/recipe/allrecipe',
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        setData(userResponse.data || []); // Ensure users data is an array
-        setRecipes(recipeResponse.data || []); // Ensure recipes data is an array
+        setData(userResponse.data);
+        setRecipes(recipeResponse.data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -60,35 +72,68 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Handle adding a new recipe
-  const handleAddRecipe = async () => {
-    // Check if all fields are filled
-    if (
-      !newRecipe.title ||
-      !newRecipe.description ||
-      !newRecipe.ingredients ||
-      !newRecipe.prepTime ||
-      !newRecipe.nutritionInfo ||
-      !newRecipe.cuisineType ||
-      !newRecipe.mealType ||
-      !newRecipe.ratingsAverage
-    ) {
-      setValidationMessage('Please fill out all fields before adding the recipe.');
-      return; // Stop execution if validation fails
+  // Update User
+  const handleUpdateUser = async (updatedUser) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`,
+        updatedUser,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setData((prevData) =>
+        prevData.map((user) =>
+          user.userId === updatedUser.userId ? response.data : user
+        )
+      );
+
+      handleCloseUserModal();
+    } catch (err) {
+      console.error('Error updating user:', err);
+      setError('Failed to update user.');
     }
-  
+  };
+
+  // Update Recipe
+  const handleUpdateRecipe = async (updatedRecipe) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `http://localhost:8080/api/recipe/update/${updatedRecipe.recipeId}`,
+        updatedRecipe,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setRecipes((prevRecipes) =>
+        prevRecipes.map((recipe) =>
+          recipe.recipeId === updatedRecipe.recipeId ? response.data : recipe
+        )
+      );
+
+      handleCloseRecipeModal();
+    } catch (err) {
+      console.error('Error updating recipe:', err);
+      setError('Failed to update recipe.');
+    }
+  };
+
+  // Add New Recipe
+  const handleAddRecipe = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
         'http://localhost:8080/api/recipe/addrecipe',
         newRecipe,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setRecipes([...recipes, response.data]); // Append new recipe
+      setRecipes([...recipes, response.data]);
       setNewRecipe({
         title: '',
         description: '',
@@ -99,64 +144,42 @@ const AdminDashboard = () => {
         mealType: '',
         ratingsAverage: '',
       });
-      setValidationMessage(''); // Clear validation message on success
     } catch (err) {
       console.error('Error adding recipe:', err);
       setError('Failed to add recipe.');
     }
   };
 
-  // Handle recipe updates via modal
-  const handleOpenRecipeModal = (recipe) => {
-    setSelectedRecipe(recipe);
-    setShowRecipeModal(true);
-  };
-
-  const handleCloseRecipeModal = () => {
-    setShowRecipeModal(false);
-    setSelectedRecipe(null);
-  };
-
-  const handleUpdateRecipe = async (updatedRecipe) => {
+  // Delete User
+  const handleDeleteUser = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `http://localhost:8080/api/recipe/update/${updatedRecipe.recipeId}`,
-        updatedRecipe,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const updatedRecipes = recipes.map((recipe) =>
-        recipe.recipeId === updatedRecipe.recipeId ? response.data : recipe
-      );
-      setRecipes(updatedRecipes);
-      handleCloseRecipeModal();
+      await axios.delete(`http://localhost:8080/api/v1/admin/users/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setData((prevData) => prevData.filter((user) => user.userId !== id));
     } catch (err) {
-      console.error('Error updating recipe:', err);
-      setError('Failed to update recipe.');
+      console.error('Error deleting user:', err);
+      setError('Failed to delete user.');
     }
   };
 
-  // Handle deleting a recipe
+  // Delete Recipe
   const handleDeleteRecipe = async (id) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:8080/api/recipe/delete/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setRecipes(recipes.filter((recipe) => recipe.recipeId !== id));
+      setRecipes((prevRecipes) =>
+        prevRecipes.filter((recipe) => recipe.recipeId !== id)
+      );
     } catch (err) {
       console.error('Error deleting recipe:', err);
       setError('Failed to delete recipe.');
     }
   };
 
-  // Handle user updates via modal
   const handleOpenUserModal = (user) => {
     setSelectedUser(user);
     setShowUserModal(true);
@@ -167,43 +190,22 @@ const AdminDashboard = () => {
     setSelectedUser(null);
   };
 
-  const handleUpdateUser = async (updatedUser) => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.put(
-        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`,
-        updatedUser,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const updatedUsers = data.map((user) =>
-        user.userId === updatedUser.userId ? response.data : user
-      );
-      setData(updatedUsers);
-      handleCloseUserModal();
-    } catch (err) {
-      console.error('Error updating user:', err);
-      setError('Failed to update user.');
-    }
+  const handleOpenRecipeModal = (recipe) => {
+    setSelectedRecipe(recipe);
+    setShowRecipeModal(true);
   };
 
-  // Handle deleting a user
-  const handleDeleteUser = async (id) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8080/api/v1/admin/users/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setData(data.filter((user) => user.userId !== id));
-    } catch (err) {
-      console.error('Error deleting user:', err);
-      setError('Failed to delete user.');
-    }
+  const handleCloseRecipeModal = () => {
+    setShowRecipeModal(false);
+    setSelectedRecipe(null);
+  };
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
+
+  const handleNavigation = (route) => {
+    navigate(route);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -211,175 +213,204 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      <h1>Admin Dashboard</h1>
-      <h2>User Management</h2>
-      <table border="1" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((user) => (
-            <tr key={user.userId}>
-              <td>{user.userId}</td>
-              <td>{user.fname}</td>
-              <td>{user.lname}</td>
-              <td>{user.email}</td>
-              <td>{user.role}</td>
-              <td>
-                <button onClick={() => handleOpenUserModal(user)}>Update</button>
-                <button onClick={() => handleDeleteUser(user.userId)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Admin Dashboard
+          </Typography>
+          <Button color="inherit" onClick={() => handleNavigation('/recipes')}>
+            Recipes
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
+            Meal Plans
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/shopping-list')}>
+            Shopping List
+          </Button>
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
 
-      <h2>Recipe Management</h2>
+      {/* User Table */}
+      <TableContainer component={Paper} sx={{ margin: '20px auto', maxWidth: '80%' }}>
+        <Typography variant="h5" sx={{ marginBottom: '10px' }}>
+          User Management
+        </Typography>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell align="right">Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((user) => (
+              <TableRow key={user.userId}>
+                <TableCell>{user.fname}</TableCell>
+                <TableCell>{user.lname}</TableCell>
+                <TableCell>{user.email}</TableCell>
+                <TableCell>{user.role}</TableCell>
+                <TableCell align="right">
+                  <IconButton color="primary" onClick={() => handleOpenUserModal(user)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => handleDeleteUser(user.userId)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-<h3>Add New Recipe</h3>
-<div style={{ display: 'flex', flexDirection: 'column', width: '300px', margin: '0 auto' }}>
-  {validationMessage && (
-    <div style={{ color: 'red', marginBottom: '15px' }}>{validationMessage}</div>
-  )}
-  <label style={{ marginBottom: '5px' }}>Title:</label>
-  <input
-    type="text"
-    placeholder="Title"
+      {/* Recipe Table */}
+      <TableContainer component={Paper} sx={{ margin: '20px auto', maxWidth: '80%' }}>
+  <Typography variant="h5" sx={{ marginBottom: '10px' }}>
+    Recipe Management
+  </Typography>
+  <Table>
+    <TableHead>
+      <TableRow>
+        <TableCell><strong>ID</strong></TableCell>
+        <TableCell><strong>Title</strong></TableCell>
+        <TableCell><strong>Description</strong></TableCell>
+        <TableCell><strong>Ingredients</strong></TableCell>
+        <TableCell><strong>Prep Time (mins)</strong></TableCell>
+        <TableCell><strong>Nutrition Info</strong></TableCell>
+        <TableCell><strong>Cuisine Type</strong></TableCell>
+        <TableCell><strong>Meal Type</strong></TableCell>
+        <TableCell><strong>Ratings Average</strong></TableCell>
+        <TableCell align="right"><strong>Actions</strong></TableCell>
+      </TableRow>
+    </TableHead>
+    <TableBody>
+      {recipes.length > 0 ? (
+        recipes.map((recipe) => (
+          <TableRow key={recipe.recipeId}>
+            <TableCell>{recipe.recipeId}</TableCell>
+            <TableCell>{recipe.title}</TableCell>
+            <TableCell>{recipe.description}</TableCell>
+            <TableCell>{recipe.ingredients}</TableCell>
+            <TableCell>{recipe.prepTime}</TableCell>
+            <TableCell>{recipe.nutritionInfo}</TableCell>
+            <TableCell>{recipe.cuisineType}</TableCell>
+            <TableCell>{recipe.mealType}</TableCell>
+            <TableCell>{recipe.ratingsAverage}</TableCell>
+            <TableCell align="right">
+              <IconButton color="primary" onClick={() => handleOpenRecipeModal(recipe)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton color="error" onClick={() => handleDeleteRecipe(recipe.recipeId)}>
+                <DeleteIcon />
+              </IconButton>
+            </TableCell>
+          </TableRow>
+        ))
+      ) : (
+        <TableRow>
+          <TableCell colSpan={10} align="center">
+            No recipes found
+          </TableCell>
+        </TableRow>
+      )}
+    </TableBody>
+  </Table>
+</TableContainer>
+
+
+      {/* Add Recipe */}
+      <Box sx={{ maxWidth: '80%', margin: '20px auto' }}>
+  <Typography variant="h6" sx={{ marginBottom: '10px' }}>
+    Add New Recipe
+  </Typography>
+  <TextField
+    label="Title"
+    fullWidth
+    margin="normal"
     value={newRecipe.title}
     onChange={(e) => setNewRecipe({ ...newRecipe, title: e.target.value })}
-    style={{ marginBottom: '15px', padding: '8px' }}
+    placeholder="Enter recipe title"
   />
-
-  <label style={{ marginBottom: '5px' }}>Description:</label>
-  <textarea
-    placeholder="Description"
+  <TextField
+    label="Description"
+    fullWidth
+    multiline
+    rows={4}
+    margin="normal"
     value={newRecipe.description}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, description: e.target.value })
-    }
-    style={{ marginBottom: '15px', padding: '8px', height: '80px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, description: e.target.value })}
+    placeholder="Enter a brief description"
   />
-
-  <label style={{ marginBottom: '5px' }}>Ingredients:</label>
-  <input
-    type="text"
-    placeholder="Ingredients (comma-separated)"
+  <TextField
+    label="Ingredients"
+    fullWidth
+    multiline
+    rows={2}
+    margin="normal"
     value={newRecipe.ingredients}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, ingredients: e.target.value })
-    }
-    style={{ marginBottom: '15px', padding: '8px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, ingredients: e.target.value })}
+    placeholder="List ingredients (comma-separated)"
   />
-
-  <label style={{ marginBottom: '5px' }}>Prep Time (in minutes):</label>
-  <input
+  <TextField
+    label="Preparation Time (minutes)"
     type="number"
-    placeholder="Prep Time"
+    fullWidth
+    margin="normal"
     value={newRecipe.prepTime}
     onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: e.target.value })}
-    style={{ marginBottom: '15px', padding: '8px' }}
+    placeholder="Enter preparation time"
   />
-
-  <label style={{ marginBottom: '5px' }}>Nutrition Info:</label>
-  <input
-    type="text"
-    placeholder="Nutrition Info"
+  <TextField
+    label="Nutrition Information"
+    fullWidth
+    margin="normal"
     value={newRecipe.nutritionInfo}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, nutritionInfo: e.target.value })
-    }
-    style={{ marginBottom: '15px', padding: '8px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, nutritionInfo: e.target.value })}
+    placeholder="Provide nutritional details"
   />
-
-  <label style={{ marginBottom: '5px' }}>Cuisine Type:</label>
-  <input
-    type="text"
-    placeholder="Cuisine Type (e.g., Italian)"
+  <TextField
+    label="Cuisine Type"
+    fullWidth
+    margin="normal"
     value={newRecipe.cuisineType}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, cuisineType: e.target.value })
-    }
-    style={{ marginBottom: '15px', padding: '8px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, cuisineType: e.target.value })}
+    placeholder="E.g., Italian, Asian, Mexican"
   />
-
-  <label style={{ marginBottom: '5px' }}>Meal Type:</label>
-  <input
-    type="text"
-    placeholder="Meal Type (e.g., Breakfast, Lunch)"
+  <TextField
+    label="Meal Type"
+    fullWidth
+    margin="normal"
     value={newRecipe.mealType}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, mealType: e.target.value })
-    }
-    style={{ marginBottom: '15px', padding: '8px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, mealType: e.target.value })}
+    placeholder="E.g., Breakfast, Lunch, Dinner"
   />
-
-  <label style={{ marginBottom: '5px' }}>Ratings Average:</label>
-  <input
+  <TextField
+    label="Ratings Average (1-5)"
     type="number"
-    placeholder="Ratings Average (1-5)"
+    fullWidth
+    margin="normal"
     value={newRecipe.ratingsAverage}
-    onChange={(e) =>
-      setNewRecipe({ ...newRecipe, ratingsAverage: e.target.value })
-    }
-    style={{ marginBottom: '20px', padding: '8px' }}
+    onChange={(e) => setNewRecipe({ ...newRecipe, ratingsAverage: e.target.value })}
+    placeholder="Enter average rating"
   />
+  <Button
+    variant="contained"
+    color="primary"
+    onClick={handleAddRecipe}
+    sx={{ marginTop: '10px' }}
+  >
+    Add Recipe
+  </Button>
+</Box>
 
-  <button onClick={handleAddRecipe}>Add Recipe</button>
-</div>
 
-
-      <h3>Recipes</h3>
-<table border="1" style={{ width: '100%', borderCollapse: 'collapse' }}>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Title</th>
-      <th>Description</th>
-      <th>Ingredients</th>
-      <th>Prep Time</th>
-      <th>Nutrition Info</th>
-      <th>Cuisine Type</th>
-      <th>Meal Type</th>
-      <th>Ratings Average</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {Array.isArray(recipes) && recipes.length > 0 ? (
-      recipes.map((recipe) => (
-        <tr key={recipe.recipeId}>
-          <td>{recipe.recipeId}</td>
-          <td>{recipe.title}</td>
-          <td>{recipe.description}</td>
-          <td>{recipe.ingredients}</td>
-          <td>{recipe.prepTime} mins</td>
-          <td>{recipe.nutritionInfo}</td>
-          <td>{recipe.cuisineType}</td>
-          <td>{recipe.mealType}</td>
-          <td>{recipe.ratingsAverage}</td>
-          <td>
-            <button onClick={() => handleOpenRecipeModal(recipe)}>Update</button>
-            <button onClick={() => handleDeleteRecipe(recipe.recipeId)}>Delete</button>
-          </td>
-        </tr>
-      ))
-    ) : (
-      <tr>
-        <td colSpan="10">No recipes found</td>
-      </tr>
-    )}
-  </tbody>
-</table>
-      {/* Render User Modal */}
+      {/* Modals */}
       {showUserModal && (
         <UpdateUserModal
           user={selectedUser}
@@ -388,7 +419,6 @@ const AdminDashboard = () => {
         />
       )}
 
-      {/* Render Recipe Modal */}
       {showRecipeModal && (
         <UpdateRecipeModal
           recipe={selectedRecipe}
