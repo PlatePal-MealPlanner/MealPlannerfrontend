@@ -20,23 +20,26 @@ const MealPlan = () => {
   const [error, setError] = useState(null); // Error state
 
   // Fetch meal plans from the backend
-  const fetchMealPlans = async () => {
-    try {
-      const token = localStorage.getItem("jwtToken"); // Adjust according to your storage logic
-      const response = await axios.get("http://localhost:8080/api/meal-plans", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setMealPlans(response.data);
-    } catch (error) {
-      console.error("Error fetching meal plans:", error);
-      setError("Failed to fetch meal plans. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
+  useEffect(() => {
+    const fetchMealPlans = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Adjust according to your storage logic
+        const response = await axios.get("http://localhost:8080/api/meal-plans", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setMealPlans(response.data);
+      } catch (error) {
+        console.error("Error fetching meal plans:", error);
+        setError("Failed to fetch meal plans. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMealPlans();
+  }, []);
 
   return (
     <Box
@@ -101,14 +104,18 @@ const MealPlan = () => {
               >
                 <ListItemAvatar>
                   <Avatar
-                    src={mealPlan.dish?.image || ""}
+                    src={`http://localhost:8080/api/recipe/images/${mealPlan.dish?.imagePath || ""}`}
                     alt={mealPlan.dish?.title || "Dish Image"}
                     sx={{ width: 56, height: 56 }}
                   />
                 </ListItemAvatar>
                 <ListItemText
                   primary={mealPlan.dish?.title || "Dish Name Not Available"}
-                  secondary={`Meal Date: ${new Date(mealPlan.mealDate).toLocaleDateString()}`}
+                  secondary={`Meal Date: ${
+                    mealPlan.mealDate
+                      ? new Date(mealPlan.mealDate).toLocaleDateString()
+                      : "No Date Provided"
+                  }`}
                 />
               </ListItem>
             ))}

@@ -10,6 +10,7 @@ import Recipe from './Recipe';
 import ShoppingList from './ShoppingList';
 import UserProfile from './UserProfile';
 import AdminDashboard from './AdminDashboard';
+import AdminRecipeManagement from './AdminRecipeManagement';
 
 
 export default function TheRoutes() {
@@ -24,6 +25,7 @@ export default function TheRoutes() {
             <Route path="/Recipe" element={<ProtectedRoute><Recipe /></ProtectedRoute>} />
             <Route path="/ShoppingList" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><UserProfile /></ProtectedRoute>} />
+            <Route path="/AdminRecipeManagement" element={<ProtectedRoute><AdminRecipeManagement /></ProtectedRoute>} />
             <Route path="*" element={<h1>Nothing Here..</h1>} />
         </Routes>
     )
