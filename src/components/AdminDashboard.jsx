@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UpdateUserModal from './UpdateUserModal';
+import UpdateRecipeModal from './UpdateRecipeModal';
 import {
   AppBar,
   Toolbar,
@@ -16,33 +17,37 @@ import {
   Paper,
   IconButton,
   Dialog,
-  DialogTitle,
   DialogActions,
+  TextField,
+  Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 
 const AdminDashboard = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState([]); // Users data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch users from the backend
+  // Fetch users and recipes
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setData(response.data);
+        const [userResponse] = await Promise.all([
+          axios.get('http://localhost:8080/api/v1/admin/users', {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        setData(userResponse.data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
-        setError('Failed to fetch users.');
+        setError('Failed to fetch data.');
         setLoading(false);
       }
     };
@@ -50,47 +55,57 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  const handleDelete = async (id) => {
+  // Update User
+  const handleUpdateUser = async (updatedUser) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`,
+        updatedUser,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      setData((prevData) =>
+        prevData.map((user) =>
+          user.userId === updatedUser.userId ? response.data : user
+        )
+      );
+
+      handleCloseUserModal();
+    } catch (err) {
+      console.error('Error updating user:', err);
+      setError('Failed to update user.');
+    }
+  };
+
+  // Delete User
+  const handleDeleteUser = async (id) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:8080/api/v1/admin/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setData(data.filter((user) => user.userId !== id));
+      setData((prevData) => prevData.filter((user) => user.userId !== id));
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user.');
     }
   };
 
-  const handleOpenModal = (user) => {
+
+
+  const handleOpenUserModal = (user) => {
     setSelectedUser(user);
-    setShowModal(true);
+    setShowUserModal(true);
   };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
+  const handleCloseUserModal = () => {
+    setShowUserModal(false);
     setSelectedUser(null);
   };
 
-  const handleUpdate = async (updatedUser) => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(
-        `http://localhost:8080/api/v1/admin/users/${updatedUser.userId}`,
-        updatedUser,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setData(response.data);
-      handleCloseModal();
-    } catch (err) {
-      console.error('Error updating user:', err);
-      setError('Failed to update user.');
-    }
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -106,13 +121,12 @@ const AdminDashboard = () => {
 
   return (
     <div>
-      {/* AppBar */}
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Button color="inherit" onClick={() => handleNavigation('/recipes')}>
+          <Button color="inherit" onClick={() => handleNavigation('/admin-recipes')}>
             Recipes
           </Button>
           <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
@@ -127,16 +141,19 @@ const AdminDashboard = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Table */}
+      {/* User Table */}
       <TableContainer component={Paper} sx={{ margin: '20px auto', maxWidth: '80%' }}>
+        <Typography variant="h5" sx={{ marginBottom: '10px' }}>
+          User Management
+        </Typography>
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell><strong>First Name</strong></TableCell>
-              <TableCell><strong>Last Name</strong></TableCell>
-              <TableCell><strong>Email</strong></TableCell>
-              <TableCell><strong>Role</strong></TableCell>
-              <TableCell align="right"><strong>Actions</strong></TableCell>
+              <TableCell>First Name</TableCell>
+              <TableCell>Last Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Role</TableCell>
+              <TableCell align="right">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -147,13 +164,10 @@ const AdminDashboard = () => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell align="right">
-                  <IconButton color="primary" onClick={() => handleOpenModal(user)}>
+                  <IconButton color="primary" onClick={() => handleOpenUserModal(user)}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(user.userId)}
-                  >
+                  <IconButton color="error" onClick={() => handleDeleteUser(user.userId)}>
                     <DeleteIcon />
                   </IconButton>
                 </TableCell>
@@ -163,22 +177,17 @@ const AdminDashboard = () => {
         </Table>
       </TableContainer>
 
-      {/* Update Modal */}
-      {showModal && (
-        <Dialog open={showModal} onClose={handleCloseModal}>
-          <DialogTitle>Update User</DialogTitle>
-          <UpdateUserModal
-            user={selectedUser}
-            onSave={handleUpdate}
-            onClose={handleCloseModal}
-          />
-          <DialogActions>
-            <Button onClick={handleCloseModal} color="secondary">
-              Cancel
-            </Button>
-          </DialogActions>
-        </Dialog>
+     
+
+      {/* Modals */}
+      {showUserModal && (
+        <UpdateUserModal
+          user={selectedUser}
+          onSave={handleUpdateUser}
+          onClose={handleCloseUserModal}
+        />
       )}
+
     </div>
   );
 };
