@@ -29,7 +29,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   // Fetch users
-  useEffect(() => {
+useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -87,6 +87,7 @@ const AdminDashboard = () => {
     }
   };
 
+
   const handleOpenUserModal = (user) => {
     setSelectedUser(user);
     setShowUserModal(true);
@@ -96,6 +97,7 @@ const AdminDashboard = () => {
     setShowUserModal(false);
     setSelectedUser(null);
   };
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -116,6 +118,7 @@ const AdminDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
+
           <Button color="inherit" onClick={() => handleNavigation('/AdminRecipeManagement')}>
             Recipes
           </Button>
@@ -167,7 +170,9 @@ const AdminDashboard = () => {
         </Table>
       </TableContainer>
 
+
       {/* User Modals */}
+
       {showUserModal && (
         <UpdateUserModal
           user={selectedUser}
