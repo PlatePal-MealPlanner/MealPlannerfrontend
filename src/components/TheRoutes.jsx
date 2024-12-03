@@ -10,6 +10,7 @@ import Recipe from './Recipe';
 import ShoppingList from './ShoppingList';
 import UserProfile from './UserProfile';
 import AdminDashboard from './AdminDashboard';
+import RecipeAdmin from './RecipeAdmin';
 
 
 export default function TheRoutes() {
@@ -20,6 +21,7 @@ export default function TheRoutes() {
             <Route path="/Register" element={<Register />} />
             <Route path="/Home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
             <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin-recipes" element={<ProtectedRoute><RecipeAdmin /></ProtectedRoute>} />
             <Route path="/MealPlan" element={<ProtectedRoute><MealPlan /></ProtectedRoute>} />
             <Route path="/Recipe" element={<ProtectedRoute><Recipe /></ProtectedRoute>} />
             <Route path="/ShoppingList" element={<ProtectedRoute><ShoppingList /></ProtectedRoute>} />
