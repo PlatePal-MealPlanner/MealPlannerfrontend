@@ -6,8 +6,8 @@ import {
   DialogActions,
   TextField,
   Button,
-  Box,
   Grid,
+  Box,
 } from '@mui/material';
 
 const UpdateUserModal = ({ user, onSave, onClose }) => {
@@ -30,7 +30,7 @@ const UpdateUserModal = ({ user, onSave, onClose }) => {
 
   const handleSubmit = () => {
     if (updatedUser.userId) {
-      onSave(updatedUser);
+      onSave(updatedUser);  // This triggers the update in the parent component
     } else {
       console.error('User ID is missing!');
     }
@@ -72,26 +72,23 @@ const UpdateUserModal = ({ user, onSave, onClose }) => {
                 variant="outlined"
               />
             </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="Email"
+                name="email"
+                value={updatedUser.email || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+              />
+            </Grid>
           </Grid>
-          <TextField
-            label="Email"
-            name="email"
-            value={updatedUser.email || ''}
-            onChange={handleChange}
-            type="email"
-            fullWidth
-            required
-            variant="outlined"
-          />
         </Box>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} variant="outlined" color="secondary">
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">
-          Save Changes
-        </Button>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button color="primary" onClick={handleSubmit}>Save</Button>
       </DialogActions>
     </Dialog>
   );
