@@ -19,6 +19,8 @@ import {
   Input,
   AppBar,
   Toolbar,
+  Alert, // Import MUI Alert
+  Snackbar, // For Snackbar component to show the Alert
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -42,6 +44,9 @@ const AdminRecipeManagement = () => {
   });
   const [updatedRecipe, setUpdatedRecipe] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Snackbar state for alert
+  const [alertMessage, setAlertMessage] = useState(""); // Store message for the alert
+  const [alertSeverity, setAlertSeverity] = useState("success"); // Store severity type for the alert
   const navigate = useNavigate();
 
   // Fetch recipes
@@ -54,7 +59,9 @@ const AdminRecipeManagement = () => {
         });
         setRecipes(response.data);
       } catch (error) {
-        console.error("Error fetching recipes:", error);
+        setAlertMessage("Error fetching recipes.");
+        setAlertSeverity("error");
+        setOpenSnackbar(true);
       }
     };
 
@@ -85,13 +92,16 @@ const AdminRecipeManagement = () => {
       });
 
       setRecipes([...recipes, response.data]);
-      alert("Recipe added successfully!");
+      setAlertMessage("Recipe added successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
       setOpenAdd(false);
       setNewRecipe({});
       setSelectedImage(null);
     } catch (error) {
-      console.error("Error adding recipe:", error);
-      alert("Failed to add recipe.");
+      setAlertMessage("Failed to add recipe.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -128,7 +138,9 @@ const AdminRecipeManagement = () => {
         }
       );
 
-      alert("Recipe updated successfully!");
+      setAlertMessage("Recipe updated successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
       setOpenEdit(false);
       setSelectedImage(null);
       setRecipes((prevRecipes) =>
@@ -139,8 +151,9 @@ const AdminRecipeManagement = () => {
         )
       );
     } catch (error) {
-      console.error("Error updating recipe:", error);
-      alert("Failed to update recipe.");
+      setAlertMessage("Failed to update recipe.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -151,10 +164,13 @@ const AdminRecipeManagement = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRecipes((prevRecipes) => prevRecipes.filter((recipe) => recipe.recipeId !== id));
-      alert("Recipe deleted successfully!");
+      setAlertMessage("Recipe deleted successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
     } catch (error) {
-      console.error("Error deleting recipe:", error);
-      alert("Failed to delete recipe.");
+      setAlertMessage("Failed to delete recipe.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -163,7 +179,9 @@ const AdminRecipeManagement = () => {
     if (file && file.type.startsWith("image/")) {
       setSelectedImage(file);
     } else {
-      alert("Please select a valid image file (e.g., .jpg, .png, .jpeg).");
+      setAlertMessage("Please select a valid image file (e.g., .jpg, .png, .jpeg).");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
       event.target.value = null; // Reset the file input
     }
   };
@@ -181,7 +199,16 @@ const AdminRecipeManagement = () => {
             Recipe Management
           </Typography>
           <Button color="inherit" onClick={() => navigate("/admin-dashboard")}>
-            Admin Dashboard
+            Users
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/admin-recipes')}>
+            Recipes
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
+            Meal Plans
+          </Button>
+          <Button color="inherit" onClick={() => handleNavigation('/shopping-list')}>
+            Shopping List
           </Button>
           <Button color="inherit" onClick={handleLogout}>
             Logout
@@ -258,16 +285,14 @@ const AdminRecipeManagement = () => {
               label="Ingredients"
               fullWidth
               margin="normal"
-              multiline
-              rows={2}
               value={newRecipe.ingredients}
               onChange={(e) => setNewRecipe({ ...newRecipe, ingredients: e.target.value })}
             />
             <TextField
-              label="Prep Time"
-              type="number"
+              label="Prep Time (mins)"
               fullWidth
               margin="normal"
+              type="number"
               value={newRecipe.prepTime}
               onChange={(e) => setNewRecipe({ ...newRecipe, prepTime: e.target.value })}
             />
@@ -293,34 +318,29 @@ const AdminRecipeManagement = () => {
               onChange={(e) => setNewRecipe({ ...newRecipe, mealType: e.target.value })}
             />
             <TextField
-              label="Ratings Average"
-              type="number"
+              label="Average Rating"
               fullWidth
               margin="normal"
+              type="number"
               value={newRecipe.ratingsAverage}
               onChange={(e) => setNewRecipe({ ...newRecipe, ratingsAverage: e.target.value })}
             />
-            <Input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleImageChange} 
-            sx={{ marginTop: "10px" }} 
+            <Input
+              type="file"
+              onChange={handleImageChange}
+              inputProps={{ accept: "image/*" }}
+              sx={{ marginTop: "10px" }}
             />
-            <Typography variant="body2" sx={{ marginTop: "5px", color: "#666" }}>
-            Upload Image for Recipe
-            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenAdd(false)}>Cancel</Button>
-            <Button onClick={handleAddRecipe} color="primary" variant="contained">
-              Add
-            </Button>
+            <Button onClick={handleAddRecipe}>Add Recipe</Button>
           </DialogActions>
         </Dialog>
 
-        {/* Update Recipe Modal */}
+        {/* Edit Recipe Modal */}
         <Dialog open={openEdit} onClose={() => setOpenEdit(false)}>
-          <DialogTitle>Update Recipe</DialogTitle>
+          <DialogTitle>Edit Recipe</DialogTitle>
           <DialogContent>
             <TextField
               label="Title"
@@ -342,16 +362,14 @@ const AdminRecipeManagement = () => {
               label="Ingredients"
               fullWidth
               margin="normal"
-              multiline
-              rows={2}
               value={updatedRecipe.ingredients}
               onChange={(e) => setUpdatedRecipe({ ...updatedRecipe, ingredients: e.target.value })}
             />
             <TextField
-              label="Prep Time"
-              type="number"
+              label="Prep Time (mins)"
               fullWidth
               margin="normal"
+              type="number"
               value={updatedRecipe.prepTime}
               onChange={(e) => setUpdatedRecipe({ ...updatedRecipe, prepTime: e.target.value })}
             />
@@ -377,30 +395,36 @@ const AdminRecipeManagement = () => {
               onChange={(e) => setUpdatedRecipe({ ...updatedRecipe, mealType: e.target.value })}
             />
             <TextField
-              label="Ratings Average"
-              type="number"
+              label="Average Rating"
               fullWidth
               margin="normal"
+              type="number"
               value={updatedRecipe.ratingsAverage}
               onChange={(e) => setUpdatedRecipe({ ...updatedRecipe, ratingsAverage: e.target.value })}
             />
-            <Input 
-            type="file" 
-            accept="image/*" 
-            onChange={handleImageChange} 
-            sx={{ marginTop: "10px" }} 
+            <Input
+              type="file"
+              onChange={handleImageChange}
+              inputProps={{ accept: "image/*" }}
+              sx={{ marginTop: "10px" }}
             />
-            <Typography variant="body2" sx={{ marginTop: "5px", color: "#666" }}>
-            Update Image for Recipe
-            </Typography>
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setOpenEdit(false)}>Cancel</Button>
-            <Button onClick={handleUpdateRecipe} color="primary" variant="contained">
-              Update
-            </Button>
+            <Button onClick={handleUpdateRecipe}>Update Recipe</Button>
           </DialogActions>
         </Dialog>
+
+        {/* Snackbar for Alert */}
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={() => setOpenSnackbar(false)}
+        >
+          <Alert onClose={() => setOpenSnackbar(false)} severity={alertSeverity}>
+            {alertMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

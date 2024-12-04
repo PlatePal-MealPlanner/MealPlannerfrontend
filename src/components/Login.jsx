@@ -1,18 +1,29 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate } from 'react-router-dom';  
-import axios from 'axios'; 
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import backgroundImage from '../assets/Landin.jpg';
-import logoImage from '../assets/platelogo.png'; 
+import logoImage from '../assets/platelogo.png';
 import '../CSS/Login.css'; // Import the CSS file
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+
+// For Snackbar to work correctly with MuiAlert
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();  
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [severity, setSeverity] = useState('success'); // 'success', 'error', etc.
+
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
@@ -20,37 +31,56 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    console.log('Login attempt started'); // Debugging line
 
     try {
       const data = { email, password };
 
-      const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', data, {
-        headers: {
-          'Content-Type': 'application/json', 
-        },
-      });
-      
-      const token = response.data.token;
-      const role = response.data.role; // Extract role from the response
+      const response = await axios.post(
+        'http://localhost:8080/api/v1/auth/authenticate',
+        data,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
-      // Store token and role in local storage
+      console.log('Response data:', response.data); // Debugging line
+
+      const token = response.data.token;
+      const role = response.data.role;
+
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
-      console.log(token);
+
+      // Set success message and open Snackbar
+      setAlertMessage('Login successful! Welcome back!');
+      setSeverity('success');
+      setOpenSnackbar(true);
+      console.log('Snackbar triggered'); // Debugging line
 
       // Navigate based on role
       if (role === 'ADMIN') {
-        navigate('/admin-dashboard'); // Replace with your actual admin dashboard route
+        navigate('/admin-dashboard');
       } else if (role === 'USER') {
-        navigate('/Home'); // Replace with your actual home route
+        navigate('/Home');
       } else {
         setErrorMessage('Invalid role. Please contact support.');
       }
-
     } catch (error) {
       console.error('Login failed:', error.response?.data || error.message);
       setErrorMessage('Invalid email or password. Please try again.');
+
+      // Set error message and open Snackbar
+      setAlertMessage('Login failed. Please check your credentials.');
+      setSeverity('error');
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -63,26 +93,28 @@ const Login = () => {
         height: '100vh',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'left',  
+        justifyContent: 'left',
       }}
     >
       <div className="login-container">
         {/* Logo Image */}
-        <img
-          src={logoImage}
-          alt="Logo"
-          className="login-logo"
-        />
+        <img src={logoImage} alt="Logo" className="login-logo" />
 
         <h1 className="login-title">Sign In</h1>
 
         {/* Show error message if login fails */}
-        {errorMessage && (
-          <p className="login-error">{errorMessage}</p>
-        )}
+        {errorMessage && <p className="login-error">{errorMessage}</p>}
 
         {/* Login form */}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        <form
+          onSubmit={handleLogin}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
           <input
             type="email"
             placeholder="Email"
@@ -106,18 +138,34 @@ const Login = () => {
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
             </button>
           </div>
-          <button
-            type="submit"
-            className="login-submit-btn"
-          >
+          <button type="submit" className="login-submit-btn">
             Sign In
           </button>
+
           <div className="login-signup">
-            Don't have an account?{' '}
-            <Link to="/register">Sign Up</Link>
+            Don't have an account? <Link to="/register">Sign Up</Link>
           </div>
         </form>
       </div>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'center',
+        }}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={severity}
+          sx={{ width: '100%' }}
+        >
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

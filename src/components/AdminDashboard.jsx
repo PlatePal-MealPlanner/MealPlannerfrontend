@@ -16,6 +16,8 @@ import {
   Paper,
   IconButton,
   Box,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -26,10 +28,13 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Snackbar state for alert
+  const [alertMessage, setAlertMessage] = useState(""); // Store message for the alert
+  const [alertSeverity, setAlertSeverity] = useState("success"); // Store severity type for the alert
   const navigate = useNavigate();
 
   // Fetch users
-useEffect(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -48,7 +53,6 @@ useEffect(() => {
     fetchData();
   }, []);
 
-  // Update User
   const handleUpdateUser = async (updatedUser) => {
     try {
       const token = localStorage.getItem('token');
@@ -60,16 +64,26 @@ useEffect(() => {
         }
       );
 
+      // Update the user in the state immediately
       setData((prevData) =>
         prevData.map((user) =>
-          user.userId === updatedUser.userId ? response.data : user
+          user.userId === updatedUser.userId ? { ...user, ...response.data } : user
         )
       );
 
+      // Show success alert
+      setAlertMessage("User updated successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
+
+      // Close the modal after saving changes
       handleCloseUserModal();
     } catch (err) {
       console.error('Error updating user:', err);
       setError('Failed to update user.');
+      setAlertMessage("Failed to update user.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -81,12 +95,18 @@ useEffect(() => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setData((prevData) => prevData.filter((user) => user.userId !== id));
+
+      setAlertMessage("User deleted successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user.');
+      setAlertMessage("Failed to delete user.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
-
 
   const handleOpenUserModal = (user) => {
     setSelectedUser(user);
@@ -98,7 +118,6 @@ useEffect(() => {
     setSelectedUser(null);
   };
 
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -106,6 +125,10 @@ useEffect(() => {
 
   const handleNavigation = (route) => {
     navigate(route);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -170,16 +193,21 @@ useEffect(() => {
         </Table>
       </TableContainer>
 
-
       {/* User Modals */}
-
       {showUserModal && (
         <UpdateUserModal
           user={selectedUser}
-          onSave={handleUpdateUser}
+          onSave={handleUpdateUser} // Pass the handleUpdateUser function
           onClose={handleCloseUserModal}
         />
       )}
+
+      {/* Snackbar for Alert */}
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
