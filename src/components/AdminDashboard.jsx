@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UpdateUserModal from './UpdateUserModal';
-import UpdateRecipeModal from './UpdateRecipeModal';
 import {
   AppBar,
   Toolbar,
@@ -16,10 +15,9 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Dialog,
-  DialogActions,
-  TextField,
   Box,
+  Alert,
+  Snackbar,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,20 +28,20 @@ const AdminDashboard = () => {
   const [error, setError] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false); // Snackbar state for alert
+  const [alertMessage, setAlertMessage] = useState(""); // Store message for the alert
+  const [alertSeverity, setAlertSeverity] = useState("success"); // Store severity type for the alert
   const navigate = useNavigate();
 
-  // Fetch users and recipes
+  // Fetch users
   useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const [userResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/v1/admin/users', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setData(userResponse.data);
+        const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setData(response.data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -55,7 +53,6 @@ const AdminDashboard = () => {
     fetchData();
   }, []);
 
-  // Update User
   const handleUpdateUser = async (updatedUser) => {
     try {
       const token = localStorage.getItem('token');
@@ -67,16 +64,26 @@ const AdminDashboard = () => {
         }
       );
 
+      // Update the user in the state immediately
       setData((prevData) =>
         prevData.map((user) =>
-          user.userId === updatedUser.userId ? response.data : user
+          user.userId === updatedUser.userId ? { ...user, ...response.data } : user
         )
       );
 
+      // Show success alert
+      setAlertMessage("User updated successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
+
+      // Close the modal after saving changes
       handleCloseUserModal();
     } catch (err) {
       console.error('Error updating user:', err);
       setError('Failed to update user.');
+      setAlertMessage("Failed to update user.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
 
@@ -88,13 +95,18 @@ const AdminDashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setData((prevData) => prevData.filter((user) => user.userId !== id));
+
+      setAlertMessage("User deleted successfully!");
+      setAlertSeverity("success");
+      setOpenSnackbar(true);
     } catch (err) {
       console.error('Error deleting user:', err);
       setError('Failed to delete user.');
+      setAlertMessage("Failed to delete user.");
+      setAlertSeverity("error");
+      setOpenSnackbar(true);
     }
   };
-
-
 
   const handleOpenUserModal = (user) => {
     setSelectedUser(user);
@@ -106,7 +118,6 @@ const AdminDashboard = () => {
     setSelectedUser(null);
   };
 
-
   const handleLogout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -114,6 +125,10 @@ const AdminDashboard = () => {
 
   const handleNavigation = (route) => {
     navigate(route);
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -126,7 +141,8 @@ const AdminDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Button color="inherit" onClick={() => handleNavigation('/admin-recipes')}>
+
+          <Button color="inherit" onClick={() => handleNavigation('/AdminRecipeManagement')}>
             Recipes
           </Button>
           <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
@@ -177,17 +193,21 @@ const AdminDashboard = () => {
         </Table>
       </TableContainer>
 
-     
-
-      {/* Modals */}
+      {/* User Modals */}
       {showUserModal && (
         <UpdateUserModal
           user={selectedUser}
-          onSave={handleUpdateUser}
+          onSave={handleUpdateUser} // Pass the handleUpdateUser function
           onClose={handleCloseUserModal}
         />
       )}
 
+      {/* Snackbar for Alert */}
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

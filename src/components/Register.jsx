@@ -4,11 +4,14 @@ import axios from 'axios';
 import backgroundImage from '../assets/Landin.jpg';
 import logoImage from '../assets/platelogo.png';
 import '../CSS/Register.css'; 
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert'; // Import MuiAlert for custom Snackbar content
 
 const Register = () => {
   const navigate = useNavigate();
   const [message, setMessage] = useState(''); // State for success or error message
   const [messageType, setMessageType] = useState(''); // Type of message: 'success' or 'error'
+  const [openSnackbar, setOpenSnackbar] = useState(false); // To control snackbar visibility
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,6 +24,7 @@ const Register = () => {
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
       setMessageType('error');
+      setOpenSnackbar(true);
       return;
     }
 
@@ -40,6 +44,7 @@ const Register = () => {
 
       setMessage('Registration successful! Redirecting to login...');
       setMessageType('success');
+      setOpenSnackbar(true);
       localStorage.setItem('token', response.data.token);
 
       // Redirect after a short delay
@@ -48,7 +53,12 @@ const Register = () => {
       console.error('Registration failed:', error.response?.data || error.message);
       setMessage('Registration failed. Please try again.');
       setMessageType('error');
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -56,13 +66,6 @@ const Register = () => {
       <div className="container">
         <img src={logoImage} alt="Logo" className="logo" />
         <h1 className="title">Sign Up</h1>
-
-        {/* Display success or error message */}
-        {message && (
-          <div className={`message ${messageType === 'success' ? 'success' : 'error'}`}>
-            {message}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="form">
           <div className="input-group">
@@ -112,6 +115,21 @@ const Register = () => {
           </div>
         </form>
       </div>
+
+      {/* Snackbar for showing success/error messages */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <MuiAlert
+          onClose={handleCloseSnackbar}
+          severity={messageType === 'success' ? 'success' : 'error'}
+          sx={{ width: '100%' }}
+        >
+          {message}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 };
