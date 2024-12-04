@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UpdateUserModal from './UpdateUserModal';
-import UpdateRecipeModal from './UpdateRecipeModal';
 import {
   AppBar,
   Toolbar,
@@ -16,9 +15,6 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Dialog,
-  DialogActions,
-  TextField,
   Box,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -32,18 +28,15 @@ const AdminDashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch users and recipes
-  useEffect(() => {
+  // Fetch users
+useEffect(() => {
     const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const [userResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/v1/admin/users', {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-
-        setData(userResponse.data);
+        const response = await axios.get('http://localhost:8080/api/v1/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setData(response.data);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -95,7 +88,6 @@ const AdminDashboard = () => {
   };
 
 
-
   const handleOpenUserModal = (user) => {
     setSelectedUser(user);
     setShowUserModal(true);
@@ -126,7 +118,8 @@ const AdminDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-          <Button color="inherit" onClick={() => handleNavigation('/admin-recipes')}>
+
+          <Button color="inherit" onClick={() => handleNavigation('/AdminRecipeManagement')}>
             Recipes
           </Button>
           <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
@@ -177,9 +170,9 @@ const AdminDashboard = () => {
         </Table>
       </TableContainer>
 
-     
 
-      {/* Modals */}
+      {/* User Modals */}
+
       {showUserModal && (
         <UpdateUserModal
           user={selectedUser}
@@ -187,7 +180,6 @@ const AdminDashboard = () => {
           onClose={handleCloseUserModal}
         />
       )}
-
     </div>
   );
 };
