@@ -96,7 +96,7 @@ const Recipe = () => {
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        minHeight: 'calc(100vh-100px)',
+        minHeight: 'calc(100vh - 100px)',
         width: '100%',
         overflow: 'auto', // Ensure scrolling works properly
         backgroundAttachment: 'fixed', // Keep the background fixed while scrolling
@@ -125,7 +125,6 @@ const Recipe = () => {
         </Typography>
 
         {/* Recipe Grid */}
-        /*comment*/
         <Grid container spacing={4} justifyContent="center">
           {recipes.map((recipe) => (
             <Grid item xs={12} sm={6} md={4} key={recipe.recipeId}>
