@@ -30,6 +30,7 @@ const MealPlan = () => {
           },
         });
         setMealPlans(response.data);
+        
       } catch (error) {
         console.error("Error fetching meal plans:", error);
         setError("Failed to fetch meal plans. Please try again later.");

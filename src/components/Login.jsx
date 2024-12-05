@@ -29,55 +29,61 @@ const Login = () => {
     setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    console.log('Login attempt started'); // Debugging line
+  const handleLogin = async (e) => {  
+    e.preventDefault();  
+    console.log('Login attempt started'); // Debugging line  
 
-    try {
-      const data = { email, password };
+    try {  
+      const data = { email, password };  
 
-      const response = await axios.post(
-        'http://localhost:8080/api/v1/auth/authenticate',
-        data,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const response = await axios.post(  
+        'http://localhost:8080/api/v1/auth/authenticate',  
+        data,  
+        {  
+          headers: {  
+            'Content-Type': 'application/json',  
+          },  
+        }  
+      );  
 
-      console.log('Response data:', response.data); // Debugging line
+      console.log('Response data:', response.data); // Debugging line  
 
-      const token = response.data.token;
-      const role = response.data.role;
+      const token = response.data.token;  
+      const role = response.data.role;  
+      const userId = response.data.userId || response.data.id; // Fallback in case of a naming issue  
+      
+      // Check the logged value  
+      console.log('Extracted values: ', { token, role, userId }); // Check the extracted values  
+      
+      localStorage.setItem('token', token);  
+      localStorage.setItem('role', role);  
+      localStorage.setItem('userId', userId); // Store userId in localStorage  
 
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', role);
+      // Set success message and open Snackbar  
+      setAlertMessage('Login successful! Welcome back!');  
+      setSeverity('success');  
+      setOpenSnackbar(true);  
+      console.log('Snackbar triggered'); // Debugging line  
 
-      // Set success message and open Snackbar
-      setAlertMessage('Login successful! Welcome back!');
-      setSeverity('success');
-      setOpenSnackbar(true);
-      console.log('Snackbar triggered'); // Debugging line
+      // Navigate based on role  
+      if (role === 'ADMIN') {  
+        navigate('/admin-dashboard');  
+      } else if (role === 'USER') {  
+        navigate('/Home');  
+      } else {  
+        setErrorMessage('Invalid role. Please contact support.');  
+      }  
+    } catch (error) {  
+      console.error('Login failed:', error.response?.data || error.message);  
+      setErrorMessage('Invalid email or password. Please try again.');  
 
-      // Navigate based on role
-      if (role === 'ADMIN') {
-        navigate('/admin-dashboard');
-      } else if (role === 'USER') {
-        navigate('/Home');
-      } else {
-        setErrorMessage('Invalid role. Please contact support.');
-      }
-    } catch (error) {
-      console.error('Login failed:', error.response?.data || error.message);
-      setErrorMessage('Invalid email or password. Please try again.');
+      // Set error message and open Snackbar  
+      setAlertMessage('Login failed. Please check your credentials.');  
+      setSeverity('error');  
+      setOpenSnackbar(true);  
+    }  
+  };  
 
-      // Set error message and open Snackbar
-      setAlertMessage('Login failed. Please check your credentials.');
-      setSeverity('error');
-      setOpenSnackbar(true);
-    }
-  };
 
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);

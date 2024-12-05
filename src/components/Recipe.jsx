@@ -52,24 +52,49 @@ const Recipe = () => {
     setSelectedRecipe(null);
   };
 
-  const handleAddToMealPlan = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:8080/api/mealplan/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ recipeId: selectedRecipe.recipeId }),
-      });
-      alert(`${selectedRecipe.title} added to Meal Plan!`);
-      handleClose();
-    } catch (error) {
-      console.error('Error adding to meal plan:', error);
-      alert('Failed to add recipe to Meal Plan.');
-    }
+  const handleAddToMealPlan = async () => {  
+    try {  
+        const token = localStorage.getItem('token');  
+        if (!token) {  
+            alert('You need to log in to add a recipe to the Meal Plan.');  
+            return;  
+        }  
+
+        console.log("Token:", token);  
+
+        const userId = localStorage.getItem('userId'); // Retrieve userId from localStorage  
+        console.log("User ID:", userId); // Log the userId to check its value  
+
+        const response = await fetch('http://localhost:8080/api/meal-plans/add', {  
+            method: 'POST',  
+            headers: {  
+                'Content-Type': 'application/json',  
+                Authorization: `Bearer ${token}`,  
+            },  
+            body: JSON.stringify({ userId: userId ? Number(userId) : null, recipeId: selectedRecipe.recipeId }),  
+        });  
+
+        console.log("Response:", response);  
+
+        if (!response.ok) {  
+            if (response.status === 403) {  
+                throw new Error('You do not have permission to perform this action.');  
+            }  
+            throw new Error(`HTTP error! status: ${response.status}`);  
+        }  
+
+        alert(`${selectedRecipe.title} added to Meal Plan!`);  
+        handleClose();  
+
+        if (typeof fetchMealPlans === 'function') {  
+            fetchMealPlans();  
+        }  
+    } catch (error) {  
+        console.error('Error adding to meal plan:', error);  
+        alert(error.message || 'Failed to add recipe to Meal Plan.');  
+    }  
   };
+  
 
   const handleAddToShoppingList = async () => {
     try {
