@@ -57,14 +57,16 @@ const AdminRecipeManagement = () => {
         const response = await axios.get("http://localhost:8080/api/recipe/allrecipe", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setRecipes(response.data);
+        console.log(response.data);  // Log the response to check the data type
+        setRecipes(Array.isArray(response.data) ? response.data : []); // Ensure it's an array
       } catch (error) {
+        console.error(error);
         setAlertMessage("Error fetching recipes.");
         setAlertSeverity("error");
         setOpenSnackbar(true);
       }
     };
-
+    
     fetchRecipes();
   }, []);
 
