@@ -258,11 +258,11 @@ const handleAddToShoppingList = async () => {
                   objectFit: 'cover',
                 }}
               />
-              <Box sx={{ width: '60%' }}>
+              <Box sx={{ width: '60%', textAlign:'left' }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
                   {selectedRecipe.title}
                 </Typography>
-                <Typography variant="h6" sx={{ mb: 2 }}>
+                <Typography variant="h6" sx={{ mb: 2}}>
                   <strong>Ingredients:</strong>
                 </Typography>
                 <ul>
@@ -273,8 +273,8 @@ const handleAddToShoppingList = async () => {
               </Box>
             </Box>
 
-            <Typography variant="h6" sx={{ mt: 3 }}>
-              <strong>Description:</strong> {selectedRecipe.description}
+            <Typography variant="h6" sx={{ mt: 3, textAlign:'left' }}>
+              <strong>Description:</strong> <br></br> {selectedRecipe.description}
             </Typography>
 
             <Box sx={{ mt: 3, display: 'flex', gap: 3 }}>
