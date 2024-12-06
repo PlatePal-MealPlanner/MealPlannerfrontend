@@ -42,13 +42,9 @@ const MealPlan = () => {
           },
         });
         setMealPlans(response.data);
-<<<<<<< Updated upstream
-      } catch (error) {
-        console.error("Error fetching meal plans:", error);
-=======
+
       } catch (err) {
         console.error("Error fetching meal plans:", err);
->>>>>>> Stashed changes
         setError("Failed to fetch meal plans. Please try again later.");
       } finally {
         setLoading(false);
