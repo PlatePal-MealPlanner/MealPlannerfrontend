@@ -52,26 +52,7 @@ const Recipe = () => {
     setSelectedRecipe(null);
   };
 
-<<<<<<< Updated upstream
-  const handleAddToMealPlan = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await fetch('http://localhost:8080/api/mealplan/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ recipeId: selectedRecipe.recipeId }),
-      });
-      alert(`${selectedRecipe.title} added to Meal Plan!`);
-      handleClose();
-    } catch (error) {
-      console.error('Error adding to meal plan:', error);
-      alert('Failed to add recipe to Meal Plan.');
-    }
-  };
-=======
+
   const handleAddToMealPlan = async () => {  
     try {  
         const token = localStorage.getItem('token');  
@@ -136,7 +117,7 @@ const Recipe = () => {
     }  
 };
   
->>>>>>> Stashed changes
+
 
 const handleAddToShoppingList = async () => {
   try {
