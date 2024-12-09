@@ -51,12 +51,27 @@ const MealPlan = () => {
               Authorization: `Bearer ${token}`,
             },
           });
-          setMealPlans(response.data);
+  
+          // Check if response.data is an array before using reduce
+          if (Array.isArray(response.data)) {
+            // Grouping meal plans by their mealType
+            const groupedMealPlans = response.data.reduce((acc, mealPlan) => {
+              const mealType = mealPlan.recipe?.mealType || "Uncategorized"; // Fallback to 'Uncategorized'
+              if (!acc[mealType]) {
+                acc[mealType] = [];
+              }
+              acc[mealType].push(mealPlan);
+              return acc;
+            }, {});
+  
+            setMealPlans(groupedMealPlans); // Save the grouped meal plans
+          } else {
+            console.error("Expected an array of meal plans, but received:", response.data);
+            setError("Failed to fetch meal plans. Invalid response format.");
+          }
         } catch (err) {
           console.error("Error fetching meal plans:", err.response || err.message);
-          setError(
-            err.response?.data || "Failed to fetch meal plans. Please try again later."
-          );
+          setError(err.response?.data || "Failed to fetch meal plans. Please try again later.");
         } finally {
           setLoading(false);
         }
@@ -65,7 +80,7 @@ const MealPlan = () => {
       fetchMealPlans();
     }
   }, [userId, navigate]);
-   // Add userId, queryParams, and navigate as dependencies
+  
 
   // Open modal with selected meal plan
   const handleOpen = (mealPlan) => {
@@ -82,21 +97,35 @@ const MealPlan = () => {
   // Delete meal plan
   const deleteMealPlan = async () => {
     if (!selectedMealPlan) return;
-
+  
     const token = localStorage.getItem("token");
-
+  
     try {
+      // Deleting the meal plan
       await axios.delete(`http://localhost:8080/api/meal-plans/${selectedMealPlan.mealPlanId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      // Update meal plans list after deletion
-      setMealPlans((prev) =>
-        prev.filter((mealPlan) => mealPlan.mealPlanId !== selectedMealPlan.mealPlanId)
-      );
-
+  
+      // After deletion, we need to filter out the deleted meal plan
+      // Group meal plans by meal type again
+      const updatedMealPlans = { ...mealPlans }; // Copy the current state
+  
+      Object.keys(updatedMealPlans).forEach((mealType) => {
+        updatedMealPlans[mealType] = updatedMealPlans[mealType].filter(
+          (mealPlan) => mealPlan.mealPlanId !== selectedMealPlan.mealPlanId
+        );
+  
+        // If there are no meal plans for that mealType anymore, delete the key
+        if (updatedMealPlans[mealType].length === 0) {
+          delete updatedMealPlans[mealType];
+        }
+      });
+  
+      // Update the state after deletion
+      setMealPlans(updatedMealPlans);
+  
       // Close modal
       handleClose();
     } catch (err) {
@@ -165,45 +194,52 @@ const MealPlan = () => {
           </Typography>
         )}
 
-        {/* Meal Plans Grid */}
-        {!loading && !error && mealPlans.length > 0 ? (
-          <Grid container spacing={4}>
-            {mealPlans.map((mealPlan) => (
-              <Grid item xs={12} sm={6} md={4} key={mealPlan.mealPlanId}>
-                <Card
-                  sx={{
-                    maxWidth: 345,
-                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-                  }}
-                  onClick={() => handleOpen(mealPlan)}
-                >
-                  <CardMedia
-                    component="img"
-                    height="140"
-                    image={
-                      mealPlan.recipe?.imagePath
-                        ? `http://localhost:8080/api/recipe/images/${mealPlan.recipe.imagePath}`
-                        : "placeholder.jpg"
-                    }
-                    alt={mealPlan.recipe?.title || "Recipe Image"}
-                  />
-                  <CardContent>
-                    <Typography gutterBottom variant="h5" component="div">
-                      {mealPlan.recipe?.title || "Recipe Title Not Available"}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {mealPlan.recipe?.description || "No description available."}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <Button size="small" onClick={() => handleOpen(mealPlan)}>
-                      View Details
-                    </Button>
-                  </CardActions>
-                </Card>
+        {/* Meal Plans Grouped by Meal Type */}
+        {!loading && !error && Object.keys(mealPlans).length > 0 ? (
+          Object.keys(mealPlans).map((mealType) => (
+            <Box key={mealType} sx={{ marginBottom: "40px" }}>
+              <Typography variant="h4" sx={{ marginBottom: "20px" }}>
+                {mealType}
+              </Typography>
+              <Grid container spacing={4}>
+                {mealPlans[mealType].map((mealPlan) => (
+                  <Grid item xs={12} sm={6} md={4} key={mealPlan.mealPlanId}>
+                    <Card
+                      sx={{
+                        maxWidth: 345,
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                      }}
+                      onClick={() => handleOpen(mealPlan)}
+                    >
+                      <CardMedia
+                        component="img"
+                        height="140"
+                        image={
+                          mealPlan.recipe?.imagePath
+                            ? `http://localhost:8080/api/recipe/images/${mealPlan.recipe.imagePath}`
+                            : "placeholder.jpg"
+                        }
+                        alt={mealPlan.recipe?.title || "Recipe Image"}
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="div">
+                          {mealPlan.recipe?.title || "Recipe Title Not Available"}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {mealPlan.recipe?.description || "No description available."}
+                        </Typography>
+                      </CardContent>
+                      <CardActions>
+                        <Button size="small" onClick={() => handleOpen(mealPlan)}>
+                          View Details
+                        </Button>
+                      </CardActions>
+                    </Card>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
+            </Box>
+          ))
         ) : (
           !loading &&
           !error && (
@@ -260,13 +296,7 @@ const MealPlan = () => {
                 <strong>Description:</strong> {selectedMealPlan.recipe.description}
               </Typography>
 
-              <Box
-                sx={{
-                  mt: 3,
-                  display: "flex",
-                  gap: 3,
-                }}
-              >
+              <Box sx={{ mt: 3, display: "flex", gap: 3 }}>
                 <Typography>
                   <strong>Prep Time:</strong> <br />
                   {selectedMealPlan.recipe.prepTime} mins
