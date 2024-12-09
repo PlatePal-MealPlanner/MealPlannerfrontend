@@ -16,7 +16,8 @@ const NavBar = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
 
- 
+  const userId = localStorage.getItem('userId'); // Get userId from localStorage
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -25,10 +26,10 @@ const NavBar = () => {
     setAnchorEl(null);
   };
 
- 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/login'); 
+    localStorage.removeItem('userId'); // Optionally clear userId when logging out
+    navigate('/login');
   };
 
   return (
@@ -41,26 +42,24 @@ const NavBar = () => {
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-     
-        <Box component={Link} to="/home" sx={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+        <Box component={Link} to={`/home?userId=${userId}`} sx={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
           <Box
             component="img"
             src={logoImage}
             alt="Logo"
             sx={{
-              height: '50px', 
-              transform: 'scale(2.5)', 
-              transformOrigin: 'center', 
+              height: '50px',
+              transform: 'scale(2.5)',
+              transformOrigin: 'center',
               cursor: 'pointer',
             }}
           />
         </Box>
 
-    
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button
             component={Link}
-            to="/mealplan"
+            to={`/mealplan?userId=${userId}`}
             variant="contained"
             sx={{
               backgroundColor: '#A0D683',
@@ -73,7 +72,7 @@ const NavBar = () => {
           </Button>
           <Button
             component={Link}
-            to="/shoppinglist"
+            to={`/shoppinglist?userId=${userId}`}
             variant="contained"
             sx={{
               backgroundColor: '#A0D683',
@@ -86,7 +85,7 @@ const NavBar = () => {
           </Button>
           <Button
             component={Link}
-            to="/recipe"
+            to={`/recipe?userId=${userId}`} // Append userId as query param
             variant="contained"
             sx={{
               backgroundColor: '#A0D683',
