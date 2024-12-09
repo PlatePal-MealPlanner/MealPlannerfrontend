@@ -73,6 +73,7 @@ const Recipe = () => {
                 Authorization: `Bearer ${token}`,
             },
         });
+        console.log(userId);
 
         if (!mealPlanResponse.ok) {
             throw new Error('Failed to fetch existing meal plans.');
@@ -87,32 +88,18 @@ const Recipe = () => {
             alert('This recipe is already added to the Meal Plan.');
             return;
         }
-
         // Add the recipe to the meal plan if it's not a duplicate
         const response = await fetch('http://localhost:8080/api/meal-plans/add', {  
-            method: 'POST',  
-            headers: {  
-                'Content-Type': 'application/json',  
-                Authorization: `Bearer ${token}`,  
-            },  
-            body: JSON.stringify({ userId: Number(userId), recipeId: selectedRecipe.recipeId }),  
-        });  
-
-        if (!response.ok) {  
-            if (response.status === 403) {  
-                throw new Error('You do not have permission to perform this action.');  
-            }  
-            throw new Error(`HTTP error! status: ${response.status}`);  
-        }  
-
-        alert(`${selectedRecipe.title} added to Meal Plan!`);  
-        handleClose();  
-
-        if (typeof fetchMealPlans === 'function') {  
-            fetchMealPlans();  
-        }  
+          method: 'POST',  
+          headers: {  
+              'Content-Type': 'application/json',  
+              Authorization: `Bearer ${token}`,  
+          },  
+          body: JSON.stringify({ userId: userId, recipeId: selectedRecipe.recipeId }),  
+      });  
+       
     } catch (error) {  
-        console.error('Error adding to meal plan:', error);  
+        console.error(error);  
         alert(error.message || 'Failed to add recipe to Meal Plan.');  
     }  
 };
