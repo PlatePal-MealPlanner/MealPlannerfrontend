@@ -1,61 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  CardMedia,
-  CardContent,
-  CardActionArea,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-} from '@mui/material';
-import NavBar from '../components/NavBar'; 
-import backgroundImage from '../assets/leafbg.png';
-import axios from 'axios';
-import { useLocation } from 'react-router-dom'
+import React from 'react';
+import { Box, Container, Typography, Grid } from '@mui/material';
+import NavBar from '../components/NavBar'; // Assuming NavBar is still needed
+import backgroundImage from '../assets/leafbg.png'; // Background image
+import Slider from 'react-slick'; // For the image slider
+
+// Import Slider Images
+import sliderImage1 from '../assets/Recipes/Cabbage Roll Casserole.png';
+import sliderImage2 from '../assets/Recipes/Carrot Cake Based Oatmeal.png';
+import sliderImage3 from '../assets/Recipes/Crispy Baked Catfish.png';
+import sliderImage4 from '../assets/Recipes/Green Goddess Farro Bowl.png';
 
 const Home = () => {
-  const [dishes, setDishes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedDish, setSelectedDish] = useState(null); 
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const userId = queryParams.get('id');
-
-  // Fetch dishes from the backend
-  useEffect(() => {
-    const fetchDishes = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/dishes');
-        setDishes(response.data);
-      } catch (error) {
-        console.error('Error fetching dishes:', error);
-      } finally {
-        setLoading(false); 
-      }
-    };
-
-    fetchDishes();
-  }, []);
-
-  // Open the dialog and set the selected dish
-  const handleCardClick = (dish) => {
-    setSelectedDish(dish);
-    setDialogOpen(true);
-  };
-
-  // Close the dialog
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setSelectedDish(null);
+  // Slider Settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: false,
   };
 
   return (
@@ -65,124 +30,123 @@ const Home = () => {
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         minHeight: '100vh',
-        overflowY: 'auto',
-        color: '#fff',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'space-between',
+        position: 'relative',
       }}
     >
-      {/* NavBar Component - Fixed Position */}
+      {/* Background Overlay */}
       <Box
         sx={{
-          position: 'sticky',
+          position: 'absolute',
           top: 0,
-          zIndex: 1000,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          zIndex: -1,
+        }}
+      />
+
+      {/* NavBar Component */}
+      <NavBar />
+
+      <Container sx={{ flex: 1, padding: '40px 20px', marginTop: '50px' }}> {/* Added marginTop */}
+  <Grid
+    container
+    spacing={4}
+    sx={{
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    {/* Left Column: Logo and Description */}
+    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', marginTop: '120px' }}> {/* Added marginTop */}
+      <Box
+        sx={{
+          position: 'relative',
+          backgroundColor: 'rgba(255, 255, 255, 0.7)', // Semi-transparent background
+          borderRadius: '30px',
+          padding: '40px',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+          width: '100%',
+          maxWidth: '750px',
+          textAlign: 'center',
+          zIndex: 1,
+          height: 'auto',
         }}
       >
-        <NavBar />
-      </Box>
-
-      {/* Main Content */}
-      <Container sx={{ textAlign: 'center', paddingTop: '20px', pb: '20px', flex: '1' }}>
-        <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', mb: 4 }}>
-          Welcome to Our Recipe Platform
+        {/* Logo and Description */}
+        <Typography
+          variant="h1"
+          component="h1"
+          sx={{
+            fontWeight: 'bold',
+            fontSize: '4rem',
+            color: '#FFD700', // Gold color
+            marginBottom: 5,
+            textShadow: '2px 2px 5px rgba(0, 0, 0, 0.5)',
+          }}
+        >
+          PlatePal
         </Typography>
         <Typography
           variant="body1"
           sx={{
-            maxWidth: '600px',
-            margin: '0 auto',
-            mb: 4,
-            fontSize: '1.2rem',
+            fontSize: '1.5rem',
+            lineHeight: 1.8,
+            color: '#333',
           }}
         >
-          Explore our collection of delicious dishes. Click on any dish to view the full recipe.
+          <span style={{ color: '#FFD700', fontWeight: 'bold' }}>PlatePal</span> is a vibrant online platform
+          designed to inspire your cooking adventures and simplify your meal planning. Whether you're exploring new
+          cuisines, organizing your weekly meals, or managing recipes, <span style={{ color: '#FFD700' }}>PlatePal</span>{' '}
+          provides a seamless experience to bring your culinary ideas to life.
         </Typography>
+      </Box>
+    </Grid>
 
-        {/* Loading Spinner */}
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-            <CircularProgress color="inherit" />
-          </Box>
-        ) : (
-          // Dishes Grid
-          <Grid container spacing={4} justifyContent="center">
-            {dishes.map((dish) => (
-              <Grid item xs={12} sm={6} md={4} key={dish.id}>
-                <Card
-                  sx={{
-                    borderRadius: '10px',
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                    transition: 'transform 0.3s ease',
-                    '&:hover': { transform: 'scale(1.05)' },
-                  }}
-                  onClick={() => handleCardClick(dish)} // Open dialog on card click
-                >
-                  <CardActionArea>
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={dish.image}
-                      alt={dish.title}
-                    />
-                    <CardContent>
-                      <Typography
-                        variant="h6"
-                        component="h3"
-                        sx={{
-                          fontWeight: 'bold',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {dish.title}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
+    {/* Right Column: Image Slider */}
+    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', marginTop: '120px' }}> {/* Added marginTop */}
+      <Box
+        sx={{
+          borderRadius: '40px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
+          width: '120%',
+          maxWidth: '500px', // Limiting width of the slider
+          margin: '5 auto',
+        }}
+      >
+        <Slider {...sliderSettings}>
+          <img src={sliderImage1} alt="Dish 1" style={{ width: '100%', height: 'auto' }} />
+          <img src={sliderImage2} alt="Dish 2" style={{ width: '100%', height: 'auto' }} />
+          <img src={sliderImage3} alt="Dish 3" style={{ width: '100%', height: 'auto' }} />
+          <img src={sliderImage4} alt="Dish 4" style={{ width: '100%', height: 'auto' }} />
+        </Slider>
+      </Box>
+    </Grid>
+  </Grid>
+</Container>
 
-        {/* Dish Dialog */}
-        <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-          <DialogTitle>{selectedDish?.title}</DialogTitle>
-          <DialogContent>
-            <Box sx={{ textAlign: 'center', mb: 2 }}>
-              <img
-                src={selectedDish?.image}
-                alt={selectedDish?.title}
-                style={{ width: '100%', borderRadius: '10px' }}
-              />
-            </Box>
-            <Typography variant="h6">Ingredients:</Typography>
-            <Typography>{selectedDish?.ingredients || 'Ingredients not available'}</Typography>
-            <Typography variant="h6" sx={{ mt: 2 }}>
-              Description:
-            </Typography>
-            <Typography>{selectedDish?.description || 'Description not available'}</Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => console.log('Add to Meal Plan:', selectedDish)}
-            >
-              Add to Meal Plan
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              onClick={() => console.log('Add to Shopping List:', selectedDish)}
-            >
-              Add to Shopping List
-            </Button>
-            <Button variant="outlined" color="error" onClick={handleCloseDialog}>
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
+
+      {/* Footer */}
+      <Box
+        sx={{
+          backgroundColor: 'rgba(0, 0, 0, 0.6)', // Gray with opacity
+          padding: '20px 0',
+          textAlign: 'center',
+          color: '#fff',
+        }}
+      >
+        <Typography variant="body2" sx={{ fontSize: '1rem' }}>
+          © 2024 PlatePal. All rights reserved.
+        </Typography>
+        <Typography variant="body2" sx={{ fontSize: '1rem' }}>
+          Email us: <a href="mailto:Platepal@gmail.com" style={{ color: '#FFD700' }}>Platepal@gmail.com</a>
+        </Typography>
+      </Box>
     </Box>
   );
 };
