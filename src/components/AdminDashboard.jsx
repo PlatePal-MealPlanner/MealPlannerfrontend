@@ -141,11 +141,13 @@ const AdminDashboard = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Admin Dashboard
           </Typography>
-
+          <Button color="inherit" onClick={() => handleNavigation('/admin-dashboard')}>
+            Users
+          </Button>
           <Button color="inherit" onClick={() => handleNavigation('/AdminRecipeManagement')}>
             Recipes
           </Button>
-          <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
+          <Button color="inherit" onClick={() => handleNavigation('/AdminMealPlan')}>
             Meal Plans
           </Button>
           <Button color="inherit" onClick={() => handleNavigation('/shopping-list')}>
