@@ -10,25 +10,33 @@ import {
   CardActionArea,
   Modal,
   Button,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import NavBar from '../components/NavBar'; // NavBar component
 import backgroundImage from '../assets/leafbg.png'; // Background image
 import { useLocation, Navigate } from 'react-router-dom';
+import axios from 'axios'; // Make sure axios is installed
 
 const Recipe = () => {
-  const location = useLocation(); // Hook to get current location
+  const location = useLocation();
   const [recipes, setRecipes] = useState([]);
-  const [selectedRecipe, setSelectedRecipe] = useState(null); // For modal
-  const [open, setOpen] = useState(false); // Modal state
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [open, setOpen] = useState(false);
+
+  // Snackbar state
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success'); // 'success' or 'error'
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const queryParams = new URLSearchParams(location.search);
-  const userId = queryParams.get('userId'); // Get userId from the URL params
+  const userId = queryParams.get('userId');
 
   // Fetch recipes from the backend
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const token = localStorage.getItem('token'); // Retrieve token for authentication
+        const token = localStorage.getItem('token');
         const response = await fetch('http://localhost:8080/api/recipe/allrecipe', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -47,7 +55,6 @@ const Recipe = () => {
     fetchRecipes();
   }, []);
 
-  // Check if the user is logged in
   const token = localStorage.getItem('token');
   if (!token || !userId) {
     return <Navigate to="/login" replace />;
@@ -63,18 +70,19 @@ const Recipe = () => {
     setSelectedRecipe(null);
   };
 
-
+  // Add to meal plan
   const handleAddToMealPlan = async () => {
     try {
-      const token = localStorage.getItem("token"); // Retrieve the auth token
-      const userId = localStorage.getItem("userId"); // Retrieve the user ID (from login or storage)
-  
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+
       if (!token || !userId) {
-        alert("You need to log in to add a recipe to the Meal Plan.");
+        setMessage('You need to log in to add a recipe to the Meal Plan.');
+        setMessageType('error');
+        setOpenSnackbar(true);
         return;
       }
-  
-      // Fetch the current meal plans for the user
+
       const mealPlanResponse = await fetch(
         `http://localhost:8080/api/meal-plans/user/${userId}`,
         {
@@ -83,66 +91,68 @@ const Recipe = () => {
           },
         }
       );
-  
+
       let mealPlans = [];
-  
+
       if (mealPlanResponse.status === 200) {
-        mealPlans = await mealPlanResponse.json(); // parse the meal plans if status is OK
+        mealPlans = await mealPlanResponse.json();
       } else if (mealPlanResponse.status === 204) {
-        // No content, meaning the user has no meal plans
         mealPlans = [];
       } else {
-        // Any other error status
         throw new Error("Failed to fetch existing meal plans.");
       }
-  
-      // Check if the selected recipe is already in the user's meal plan
+
       const isDuplicate = mealPlans.some(
         (mealPlan) =>
           mealPlan.recipe && mealPlan.recipe.recipeId === selectedRecipe.recipeId
       );
-  
+
       if (isDuplicate) {
-        alert("This recipe is already added to the Meal Plan.");
+        setMessage('This recipe is already added to the Meal Plan.');
+        setMessageType('error');
+        setOpenSnackbar(true);
         return;
       }
-  
-      // Prepare request body
+
       const body = {
-        userId: Number(userId), // Ensure it's a number
+        userId: Number(userId),
         recipeId: selectedRecipe.recipeId,
       };
-  
-      // Call the backend API to add the recipe to the meal plan
+
       const response = await fetch("http://localhost:8080/api/meal-plans/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Pass token in Authorization header
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
       });
-  
-      // Handle API response
+
       if (!response.ok) {
         const errorMessage = await response.text();
         throw new Error(errorMessage);
       }
-  
-      alert(`${selectedRecipe.title} added to Meal Plan!`);
+
+      setMessage(`${selectedRecipe.title} added to Meal Plan!`);
+      setMessageType('success');
+      setOpenSnackbar(true);
       handleClose(); // Close the modal after successful addition
     } catch (error) {
       console.error("Error adding to meal plan:", error);
-      alert(error.message || "Failed to add recipe to Meal Plan. Please try again.");
+      setMessage(error.message || 'Failed to add recipe to Meal Plan. Please try again.');
+      setMessageType('error');
+      setOpenSnackbar(true);
     }
   };
 
-
+  // Add to shopping list
   const handleAddToShoppingList = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token || !userId) {
-        alert('You need to log in to add a recipe to the shopping list.');
+        setMessage('You need to log in to add a recipe to the shopping list.');
+        setMessageType('error');
+        setOpenSnackbar(true);
         return;
       }
 
@@ -164,45 +174,46 @@ const Recipe = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      alert(`${selectedRecipe.title} added to Shopping List!`);
+      setMessage(`${selectedRecipe.title} added to Shopping List!`);
+      setMessageType('success');
+      setOpenSnackbar(true);
     } catch (error) {
       console.error('Error adding to shopping list:', error);
-      alert('Failed to add recipe to Shopping List.');
+      setMessage('Failed to add recipe to Shopping List.');
+      setMessageType('error');
+      setOpenSnackbar(true);
     }
   };
 
   return (
     <Box
-  sx={{
-    backgroundImage: `url(${backgroundImage})`,
-    backgroundSize: 'cover', // Ensures the image covers the entire container
-    backgroundRepeat: 'no-repeat', // Prevents the image from repeating
-    backgroundPosition: 'center', // Centers the image
-    minHeight: '100vh', // Minimum height to cover the viewport
-    width: '100%',
-    overflow: 'auto', // Ensures scrolling works properly if content overflows
-    backgroundAttachment: 'fixed', // Keeps the background fixed while scrolling
-    paddingBottom: '20px',
-    display: 'flex', // Allows centering of content
-    flexDirection: 'column', // Stacks child elements vertically
-    color: '#333',
-  }}
->
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        minHeight: '100vh',
+        width: '100%',
+        overflow: 'auto',
+        backgroundAttachment: 'fixed',
+        paddingBottom: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        color: '#333',
+      }}
+    >
       <NavBar />
 
-      <Container
-        sx={{
-          textAlign: 'center',
-          paddingTop: '20px',
-        }}
-      >
+      <Container sx={{ textAlign: 'center', paddingTop: '20px' }}>
         <Typography
-          variant="h3"
+          variant="h1"
           component="h1"
           sx={{
             fontWeight: 'bold',
-            marginBottom: '30px',
-            color: '#fff',
+            fontSize: '4rem',
+            color: '#FFD700',
+            marginBottom: 5,
+            textShadow: '2px 2px 5px rgba(0, 0, 0, 0.5)',
           }}
         >
           Recipe Collection
@@ -224,7 +235,7 @@ const Recipe = () => {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`http://localhost:8080/api/recipe/images/${recipe.imagePath}`} // Include "uploads/"
+                    image={`http://localhost:8080/api/recipe/images/${recipe.imagePath}`}
                     alt={recipe.title}
                     sx={{
                       borderTopLeftRadius: '15px',
@@ -334,7 +345,7 @@ const Recipe = () => {
                   backgroundColor: '#A0D683',
                   color: '#fff',
                   '&:hover': {
-                    backgroundColor: '#8CC765', // Slightly darker shade for hover effect
+                    backgroundColor: '#8CC765',
                   },
                 }}
                 onClick={handleAddToMealPlan}
@@ -347,7 +358,7 @@ const Recipe = () => {
                   backgroundColor: '#72BF78',
                   color: '#fff',
                   '&:hover': {
-                    backgroundColor: '#D3EE98', // Slightly darker shade for hover effect
+                    backgroundColor: '#D3EE98',
                   },
                 }}
                 onClick={handleAddToShoppingList}
@@ -358,6 +369,21 @@ const Recipe = () => {
           </Box>
         </Modal>
       )}
+
+      {/* Snackbar for Messages */}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={() => setOpenSnackbar(false)}
+      >
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={messageType}
+          sx={{ width: '100%' }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
