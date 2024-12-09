@@ -66,7 +66,10 @@ const ShoppingList = () => {
       ...item,
       ingredients: Array.from({ length: 5 }, () =>
         ingredients[Math.floor(Math.random() * ingredients.length)]
-      ).map((ingredient) => ({ name: ingredient, checked: false })),
+      ).map((ingredient) => ({
+        name: ingredient,
+        checked: localStorage.getItem(ingredient) === 'true' || false, // Retrieve saved state from localStorage
+      })),
     });
     setOpen(true);
   };
@@ -77,11 +80,19 @@ const ShoppingList = () => {
   };
 
   const toggleIngredient = (index) => {
+    const updatedIngredients = selectedItem.ingredients.map((ingredient, i) =>
+      i === index
+        ? { ...ingredient, checked: !ingredient.checked }
+        : ingredient
+    );
+
+    // Save the checked state to localStorage to persist it across modal openings
+    const ingredientName = updatedIngredients[index].name;
+    localStorage.setItem(ingredientName, updatedIngredients[index].checked);
+
     setSelectedItem((prevState) => ({
       ...prevState,
-      ingredients: prevState.ingredients.map((ingredient, i) =>
-        i === index ? { ...ingredient, checked: !ingredient.checked } : ingredient
-      ),
+      ingredients: updatedIngredients,
     }));
   };
 
@@ -91,30 +102,28 @@ const ShoppingList = () => {
         backgroundImage: `url(${backgroundImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        minHeight: '100vh',
-        color: '#fff',
+        minHeight: '100vh', // Ensures full viewport height
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden', // Prevents body from scrolling beyond the background
       }}
     >
       <NavBar />
-      <Container
-        sx={{
-          textAlign: 'center',
-          paddingTop: '20px',
-        }}
-      >
+      <Container sx={{ textAlign: 'center', paddingTop: '20px' }}>
         <Typography
-          variant="h3"
+          variant="h1"
           component="h1"
           sx={{
             fontWeight: 'bold',
-            mb: 3,
-            color: '#fff',
+            fontSize: '4rem',
+            color: '#FFD700', // Gold color
+            marginBottom: 5,
+            textShadow: '2px 2px 5px rgba(0, 0, 0, 0.5)',
           }}
         >
           Shopping List
         </Typography>
+
         <Grid container spacing={4} justifyContent="center">
           {shoppingItems.map((item, index) => (
             <Grid item xs={12} sm={6} md={4} key={index}>
@@ -144,6 +153,7 @@ const ShoppingList = () => {
                       sx={{
                         fontWeight: 'bold',
                         textAlign: 'center',
+                        fontSize: '1.1rem',
                       }}
                     >
                       {item.name}
@@ -156,6 +166,7 @@ const ShoppingList = () => {
         </Grid>
       </Container>
 
+      {/* Modal for ingredients */}
       {selectedItem && (
         <Modal open={open} onClose={handleClose}>
           <Box
@@ -169,37 +180,57 @@ const ShoppingList = () => {
               boxShadow: 24,
               p: 4,
               borderRadius: '10px',
-              overflow: 'auto',
-              maxHeight: '90vh',
+              maxHeight: '80vh',
+              overflowY: 'auto',
             }}
           >
             <Typography
               variant="h4"
-              sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}
+              sx={{
+                fontWeight: 'bold',
+                mb: 3,
+                textAlign: 'center',
+                fontSize: '2rem',
+              }}
             >
               {selectedItem.name}
             </Typography>
-            <ul>
-              {selectedItem.ingredients.map((ingredient, index) => (
-                <li key={index}>
-                  <label>
-                    <input
-                      type="checkbox"
-                      checked={ingredient.checked}
-                      onChange={() => toggleIngredient(index)}
-                      style={{ marginRight: '8px' }}
-                    />
-                    <span
-                      style={{
-                        textDecoration: ingredient.checked ? 'line-through' : 'none',
-                      }}
-                    >
-                      {ingredient.name}
-                    </span>
-                  </label>
-                </li>
-              ))}
-            </ul>
+
+            <Box
+              sx={{
+                maxHeight: '60vh',
+                overflowY: 'scroll',
+                paddingRight: '10px',
+              }}
+            >
+              <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: 2 }}>
+                Ingredients:
+              </Typography>
+              <ul>
+                {selectedItem.ingredients.map((ingredient, index) => (
+                  <li key={index} style={{ marginBottom: '10px' }}>
+                    <label style={{ fontSize: '1.1rem' }}>
+                      <input
+                        type="checkbox"
+                        checked={ingredient.checked}
+                        onChange={() => toggleIngredient(index)}
+                        style={{
+                          marginRight: '8px',
+                        }}
+                      />
+                      <span
+                        style={{
+                          textDecoration: ingredient.checked ? 'line-through' : 'none',
+                        }}
+                      >
+                        {ingredient.name}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </Box>
+
             <Box sx={{ textAlign: 'center', mt: 3 }}>
               <Button
                 variant="contained"
@@ -210,6 +241,7 @@ const ShoppingList = () => {
                   '&:hover': {
                     backgroundColor: '#5BAF60',
                   },
+                  padding: '10px 20px',
                 }}
               >
                 Close

@@ -62,7 +62,7 @@ const Home = () => {
     }}
   >
     {/* Left Column: Logo and Description */}
-    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', marginTop: '120px' }}> {/* Added marginTop */}
+    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'left', marginTop: '120px'}}> {/* Added marginTop */}
       <Box
         sx={{
           position: 'relative',
@@ -94,39 +94,37 @@ const Home = () => {
         <Typography
           variant="body1"
           sx={{
-            fontSize: '1.5rem',
+            fontSize: '1.28rem',
             lineHeight: 1.8,
             color: '#333',
           }}
         >
-          <span style={{ color: '#FFD700', fontWeight: 'bold' }}>PlatePal</span> is a vibrant online platform
-          designed to inspire your cooking adventures and simplify your meal planning. Whether you're exploring new
-          cuisines, organizing your weekly meals, or managing recipes, <span style={{ color: '#FFD700' }}>PlatePal</span>{' '}
-          provides a seamless experience to bring your culinary ideas to life.
+         <span style={{ color: '#FFD700', fontWeight: 'bold' }}>PlatePal</span> makes meal preparation simple and efficient. On our Recipe page, explore a wide variety of dishes and decide how you want to organize your meals. With just a click, you can add recipes directly to your Meal Plan to structure your days or to your Shopping List to ensure you have all the ingredients ready. Whether you’re planning meals for the day or creating a grocery list, <span style={{ color: '#FFD700' }}>PlatePal</span> gives you the flexibility to stay organized and focus on what matters most – enjoying delicious meals!
+
         </Typography>
       </Box>
     </Grid>
 
-    {/* Right Column: Image Slider */}
-    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center', marginTop: '120px' }}> {/* Added marginTop */}
-      <Box
-        sx={{
-          borderRadius: '40px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
-          width: '120%',
-          maxWidth: '500px', // Limiting width of the slider
-          margin: '5 auto',
-        }}
-      >
-        <Slider {...sliderSettings}>
-          <img src={sliderImage1} alt="Dish 1" style={{ width: '100%', height: 'auto' }} />
-          <img src={sliderImage2} alt="Dish 2" style={{ width: '100%', height: 'auto' }} />
-          <img src={sliderImage3} alt="Dish 3" style={{ width: '100%', height: 'auto' }} />
-          <img src={sliderImage4} alt="Dish 4" style={{ width: '100%', height: 'auto' }} />
-        </Slider>
-      </Box>
-    </Grid>
+<Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: '120px' }}> {/* Using flex-end */}
+  <Box
+    sx={{
+      borderRadius: '40px',
+      overflow: 'hidden',
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.4)',
+      width: '120%',
+      maxWidth: '850px', // Limiting width of the slider
+      marginLeft: 'auto', // Ensures it aligns to the right
+    }}
+  >
+    <Slider {...sliderSettings}>
+      <img src={sliderImage1} alt="Dish 1" style={{ width: '100%', height: 'auto' }} />
+      <img src={sliderImage2} alt="Dish 2" style={{ width: '100%', height: 'auto' }} />
+      <img src={sliderImage3} alt="Dish 3" style={{ width: '100%', height: 'auto' }} />
+      <img src={sliderImage4} alt="Dish 4" style={{ width: '100%', height: 'auto' }} />
+    </Slider>
+  </Box>
+</Grid>
+
   </Grid>
 </Container>
 

@@ -159,11 +159,14 @@ const MealPlan = () => {
         }}
       >
         <Typography
-          variant="h3"
+          variant="h1"
           component="h1"
           sx={{
-            fontWeight: "bold",
-            mb: 2,
+            fontWeight: 'bold',
+            fontSize: '4rem',
+            color: '#FFD700', // Gold color
+            marginBottom: 5,
+            textShadow: '2px 2px 5px rgba(0, 0, 0, 0.5)',
           }}
         >
           Meal Plan
@@ -177,7 +180,7 @@ const MealPlan = () => {
             fontSize: "1.2rem",
           }}
         >
-          Welcome to your personalized meal plan. Here you can organize meals for your week.
+          
         </Typography>
 
         {/* Loading Indicator */}
