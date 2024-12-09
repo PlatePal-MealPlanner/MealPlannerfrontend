@@ -19,12 +19,16 @@ import {
 import NavBar from '../components/NavBar'; 
 import backgroundImage from '../assets/leafbg.png';
 import axios from 'axios';
+import { useLocation } from 'react-router-dom'
 
 const Home = () => {
   const [dishes, setDishes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedDish, setSelectedDish] = useState(null); 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const userId = queryParams.get('id');
 
   // Fetch dishes from the backend
   useEffect(() => {

@@ -15,44 +15,57 @@ import {
 import axios from "axios";
 import backgroundImage from "../assets/leafbg.png"; // Background image
 import NavBar from "../components/NavBar"; // NavBar component
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation and useNavigate
 
 const MealPlan = () => {
+  const location = useLocation(); // Hook to access current location
+  const navigate = useNavigate(); // To redirect users
   const [mealPlans, setMealPlans] = useState([]); // State for meal plans
   const [loading, setLoading] = useState(true); // Loading indicator
   const [error, setError] = useState(null); // Error state
   const [selectedMealPlan, setSelectedMealPlan] = useState(null); // Selected meal plan for modal
   const [open, setOpen] = useState(false); // Modal state
 
-  // Fetch meal plans by user ID
+  // Retrieve userId from query parameters or fallback to localStorage
+  const queryParams = new URLSearchParams(location.search);
+  const userId = queryParams.get("userId") || localStorage.getItem("userId");
+
   useEffect(() => {
-    const fetchMealPlans = async () => {
-      const userId = localStorage.getItem("userId"); // Get user ID from localStorage
+    const checkLoginStatus = () => {
       const token = localStorage.getItem("token");
-
-      if (!userId) {
-        setError("User ID not found. Please log in again.");
-        setLoading(false);
-        return;
+      if (!userId || !token) {
+        // If no userId or token, redirect to login
+        navigate("/login");
+        return false;
       }
-
-      try {
-        const response = await axios.get(`http://localhost:8080/api/meal-plans/user/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setMealPlans(response.data);
-
-      } catch (err) {
-        console.error("Error fetching meal plans:", err);
-        setError("Failed to fetch meal plans. Please try again later.");
-      } finally {
-        setLoading(false);
-      }
+      return true;
     };
-
-    fetchMealPlans();
-  }, []);
+  
+    if (checkLoginStatus()) {
+      const fetchMealPlans = async () => {
+        const token = localStorage.getItem("token");
+  
+        try {
+          const response = await axios.get(`http://localhost:8080/api/meal-plans/user/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          setMealPlans(response.data);
+        } catch (err) {
+          console.error("Error fetching meal plans:", err.response || err.message);
+          setError(
+            err.response?.data || "Failed to fetch meal plans. Please try again later."
+          );
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchMealPlans();
+    }
+  }, [userId, navigate]);
+   // Add userId, queryParams, and navigate as dependencies
 
   // Open modal with selected meal plan
   const handleOpen = (mealPlan) => {
@@ -96,14 +109,17 @@ const MealPlan = () => {
     <Box
       sx={{
         backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        minHeight: "calc(100vh-100px)",
-        width: "100%",
-        overflow: "auto", // Ensure scrolling works properly
-        backgroundAttachment: "fixed", // Keep the background fixed while scrolling
-        paddingBottom: "20px",
-        color: "#fff",
+        backgroundSize: 'cover', // Ensures the image covers the entire container
+        backgroundRepeat: 'no-repeat', // Prevents the image from repeating
+        backgroundPosition: 'center', // Centers the image
+        minHeight: '100vh', // Minimum height to cover the viewport
+        width: '100%',
+        overflow: 'auto', // Ensures scrolling works properly if content overflows
+        backgroundAttachment: 'fixed', // Keeps the background fixed while scrolling
+        paddingBottom: '20px',
+        display: 'flex', // Allows centering of content
+        flexDirection: 'column', // Stacks child elements vertically
+        color: '#fff',
       }}
     >
       <NavBar />
@@ -225,8 +241,8 @@ const MealPlan = () => {
                     objectFit: "cover",
                   }}
                 />
-                <Box sx={{ width: '60%' }}>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
+                <Box sx={{ width: "60%" }}>
+                  <Typography variant="h4" sx={{ fontWeight: "bold", mb: 2 }}>
                     {selectedMealPlan.recipe.title}
                   </Typography>
                   <Typography variant="h5" sx={{ mb: 2 }}>
@@ -246,14 +262,18 @@ const MealPlan = () => {
 
               <Box
                 sx={{
-                  mt: 3, display: 'flex', gap: 3 
+                  mt: 3,
+                  display: "flex",
+                  gap: 3,
                 }}
               >
                 <Typography>
-                  <strong>Prep Time:</strong> <br></br>{selectedMealPlan.recipe.prepTime} mins
+                  <strong>Prep Time:</strong> <br />
+                  {selectedMealPlan.recipe.prepTime} mins
                 </Typography>
                 <Typography>
-                  <strong>Nutrition Info:</strong> <br></br>{selectedMealPlan.recipe.nutritionInfo}
+                  <strong>Nutrition Info:</strong> <br />
+                  {selectedMealPlan.recipe.nutritionInfo}
                 </Typography>
                 <Typography>
                   <strong>Cuisine Type:</strong> {selectedMealPlan.recipe.cuisineType}
@@ -267,12 +287,9 @@ const MealPlan = () => {
               </Box>
 
               {/* Delete Button */}
-              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3, gap: 2 }}>
-                <Button variant="outlined" color="error" onClick={deleteMealPlan}>
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
+                <Button variant="contained" color="error" onClick={deleteMealPlan}>
                   Delete Meal Plan
-                </Button>
-                <Button variant="contained" onClick={handleClose}>
-                  Close
                 </Button>
               </Box>
             </Box>

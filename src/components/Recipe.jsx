@@ -13,11 +13,16 @@ import {
 } from '@mui/material';
 import NavBar from '../components/NavBar'; // NavBar component
 import backgroundImage from '../assets/leafbg.png'; // Background image
+import { useLocation, Navigate } from 'react-router-dom';
 
 const Recipe = () => {
+  const location = useLocation(); // Hook to get current location
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null); // For modal
   const [open, setOpen] = useState(false); // Modal state
+
+  const queryParams = new URLSearchParams(location.search);
+  const userId = queryParams.get('userId'); // Get userId from the URL params
 
   // Fetch recipes from the backend
   useEffect(() => {
@@ -42,6 +47,12 @@ const Recipe = () => {
     fetchRecipes();
   }, []);
 
+  // Check if the user is logged in
+  const token = localStorage.getItem('token');
+  if (!token || !userId) {
+    return <Navigate to="/login" replace />;
+  }
+
   const handleOpen = (recipe) => {
     setSelectedRecipe(recipe);
     setOpen(true);
@@ -53,121 +64,130 @@ const Recipe = () => {
   };
 
 
-  const handleAddToMealPlan = async () => {  
-    try {  
-        const token = localStorage.getItem('token');  
-        if (!token) {  
-            alert('You need to log in to add a recipe to the Meal Plan.');  
-            return;  
-        }  
-
-        const userId = localStorage.getItem('userId');  
-        if (!userId) {  
-            alert('User ID not found. Please log in again.');  
-            return;  
-        }  
-
-        // Fetch current meal plans to check for duplicates
-        const mealPlanResponse = await fetch(`http://localhost:8080/api/meal-plans/user/${userId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!mealPlanResponse.ok) {
-            throw new Error('Failed to fetch existing meal plans.');
-        }
-
-        const currentMealPlans = await mealPlanResponse.json();
-        const isDuplicate = currentMealPlans.some(
-            (mealPlan) => mealPlan.recipe.recipeId === selectedRecipe.recipeId
-        );
-
-        if (isDuplicate) {
-            alert('This recipe is already added to the Meal Plan.');
-            return;
-        }
-
-        // Add the recipe to the meal plan if it's not a duplicate
-        const response = await fetch('http://localhost:8080/api/meal-plans/add', {  
-            method: 'POST',  
-            headers: {  
-                'Content-Type': 'application/json',  
-                Authorization: `Bearer ${token}`,  
-            },  
-            body: JSON.stringify({ userId: Number(userId), recipeId: selectedRecipe.recipeId }),  
-        });  
-
-        if (!response.ok) {  
-            if (response.status === 403) {  
-                throw new Error('You do not have permission to perform this action.');  
-            }  
-            throw new Error(`HTTP error! status: ${response.status}`);  
-        }  
-
-        alert(`${selectedRecipe.title} added to Meal Plan!`);  
-        handleClose();  
-
-        if (typeof fetchMealPlans === 'function') {  
-            fetchMealPlans();  
-        }  
-    } catch (error) {  
-        console.error('Error adding to meal plan:', error);  
-        alert(error.message || 'Failed to add recipe to Meal Plan.');  
-    }  
-};
+  const handleAddToMealPlan = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Retrieve the auth token
+      const userId = localStorage.getItem("userId"); // Retrieve the user ID (from login or storage)
   
-
-
-const handleAddToShoppingList = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
-
-    if (!token || !userId) {
-      alert('You need to log in to add a recipe to the shopping list.');
-      return;
-    }
-
-    console.log('Adding to shopping list with:', { userId, recipeId: selectedRecipe.recipeId });
-
-    const response = await fetch('http://localhost:8080/api/shopping-list-items/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        userId: Number(userId),
+      if (!token || !userId) {
+        alert("You need to log in to add a recipe to the Meal Plan.");
+        return;
+      }
+  
+      // Fetch the current meal plans for the user
+      const mealPlanResponse = await fetch(
+        `http://localhost:8080/api/meal-plans/user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      let mealPlans = [];
+  
+      if (mealPlanResponse.status === 200) {
+        mealPlans = await mealPlanResponse.json(); // parse the meal plans if status is OK
+      } else if (mealPlanResponse.status === 204) {
+        // No content, meaning the user has no meal plans
+        mealPlans = [];
+      } else {
+        // Any other error status
+        throw new Error("Failed to fetch existing meal plans.");
+      }
+  
+      // Check if the selected recipe is already in the user's meal plan
+      const isDuplicate = mealPlans.some(
+        (mealPlan) =>
+          mealPlan.recipe && mealPlan.recipe.recipeId === selectedRecipe.recipeId
+      );
+  
+      if (isDuplicate) {
+        alert("This recipe is already added to the Meal Plan.");
+        return;
+      }
+  
+      // Prepare request body
+      const body = {
+        userId: Number(userId), // Ensure it's a number
         recipeId: selectedRecipe.recipeId,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      };
+  
+      // Call the backend API to add the recipe to the meal plan
+      const response = await fetch("http://localhost:8080/api/meal-plans/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Pass token in Authorization header
+        },
+        body: JSON.stringify(body),
+      });
+  
+      // Handle API response
+      if (!response.ok) {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage);
+      }
+  
+      alert(`${selectedRecipe.title} added to Meal Plan!`);
+      handleClose(); // Close the modal after successful addition
+    } catch (error) {
+      console.error("Error adding to meal plan:", error);
+      alert(error.message || "Failed to add recipe to Meal Plan. Please try again.");
     }
+  };
 
-    alert(`${selectedRecipe.title} added to Shopping List!`);
-  } catch (error) {
-    console.error('Error adding to shopping list:', error);
-    alert('Failed to add recipe to Shopping List.');
-  }
-};
+
+  const handleAddToShoppingList = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token || !userId) {
+        alert('You need to log in to add a recipe to the shopping list.');
+        return;
+      }
+
+      console.log('Adding to shopping list with:', { userId, recipeId: selectedRecipe.recipeId });
+
+      const response = await fetch('http://localhost:8080/api/shopping-list-items/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: Number(userId),
+          recipeId: selectedRecipe.recipeId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      alert(`${selectedRecipe.title} added to Shopping List!`);
+    } catch (error) {
+      console.error('Error adding to shopping list:', error);
+      alert('Failed to add recipe to Shopping List.');
+    }
+  };
 
   return (
     <Box
-      sx={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        minHeight: 'calc(100vh-100px)',
-        width: '100%',
-        overflow: 'auto', // Ensure scrolling works properly
-        backgroundAttachment: 'fixed', // Keep the background fixed while scrolling
-        paddingBottom: '20px',
-        color: '#333',
-      }}
-    >
+  sx={{
+    backgroundImage: `url(${backgroundImage})`,
+    backgroundSize: 'cover', // Ensures the image covers the entire container
+    backgroundRepeat: 'no-repeat', // Prevents the image from repeating
+    backgroundPosition: 'center', // Centers the image
+    minHeight: '100vh', // Minimum height to cover the viewport
+    width: '100%',
+    overflow: 'auto', // Ensures scrolling works properly if content overflows
+    backgroundAttachment: 'fixed', // Keeps the background fixed while scrolling
+    paddingBottom: '20px',
+    display: 'flex', // Allows centering of content
+    flexDirection: 'column', // Stacks child elements vertically
+    color: '#333',
+  }}
+>
       <NavBar />
 
       <Container
@@ -235,22 +255,23 @@ const handleAddToShoppingList = async () => {
         <Modal open={open} onClose={handleClose}>
           <Box
             sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "50%",
-              backgroundColor: "white",
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '50%',
+              backgroundColor: 'white',
               boxShadow: 24,
               p: 4,
-              borderRadius: "10px",
-              overflow: "auto",
-              maxHeight: "90vh",
+              borderRadius: '10px',
+              overflow: 'auto',
+              maxHeight: '90vh',
             }}
           >
+            {/* Modal content */}
             <Box display="flex" flexDirection="row" gap="20px">
               <img
-                src={`http://localhost:8080/api/recipe/images/${selectedRecipe.imagePath}`} // Fetch image from backend
+                src={`http://localhost:8080/api/recipe/images/${selectedRecipe.imagePath}`}
                 alt={selectedRecipe.title}
                 style={{
                   borderRadius: '10px',
@@ -258,7 +279,7 @@ const handleAddToShoppingList = async () => {
                   objectFit: 'cover',
                 }}
               />
-              <Box sx={{ width: '60%' }}>
+              <Box sx={{ width: '60%', textAlign: 'left' }}>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
                   {selectedRecipe.title}
                 </Typography>
@@ -273,25 +294,35 @@ const handleAddToShoppingList = async () => {
               </Box>
             </Box>
 
-            <Typography variant="h6" sx={{ mt: 3 }}>
-              <strong>Description:</strong> {selectedRecipe.description}
+            <Typography variant="h6" sx={{ mt: 3, textAlign: 'left' }}>
+              <strong>Description:</strong> <br />
+              {selectedRecipe.description}
             </Typography>
 
             <Box sx={{ mt: 3, display: 'flex', gap: 3 }}>
               <Typography>
-                <strong>Prep Time:</strong> <br></br> {selectedRecipe.prepTime}
+                <strong>Prep Time:</strong> <br />
+                {selectedRecipe.prepTime}
               </Typography>
               <Typography>
-                <strong>Nutrition Info:</strong><br></br> {selectedRecipe.nutritionInfo}
+                <strong>Nutrition Info:</strong>
+                <br />
+                {selectedRecipe.nutritionInfo}
               </Typography>
               <Typography>
-                <strong>Cuisine Type:</strong><br></br> {selectedRecipe.cuisineType}
+                <strong>Cuisine Type:</strong>
+                <br />
+                {selectedRecipe.cuisineType}
               </Typography>
               <Typography>
-                <strong>Meal Type:</strong><br></br> {selectedRecipe.mealType}
+                <strong>Meal Type:</strong>
+                <br />
+                {selectedRecipe.mealType}
               </Typography>
               <Typography>
-                <strong>Ratings:</strong><br></br> {selectedRecipe.ratingsAverage}
+                <strong>Ratings:</strong>
+                <br />
+                {selectedRecipe.ratingsAverage}
               </Typography>
             </Box>
 
