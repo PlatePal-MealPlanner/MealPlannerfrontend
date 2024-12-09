@@ -48,14 +48,14 @@ const Login = () => {
 
       console.log('Response data:', response.data); // Debugging line
 
-      const token = response.data.token;
-      const role = response.data.role;
-      const {userId} = response.data;
 
-      localStorage.setItem("userId", userId);
+      const { token, role, userId } = response.data; // Assuming the response includes userId
 
+
+      // Store token, role, and userId in localStorage
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
+      localStorage.setItem('userId', userId); // Store userId in localStorage
 
       // Set success message and open Snackbar
       setAlertMessage('Login successful! Welcome back!');
@@ -67,7 +67,7 @@ const Login = () => {
       if (role === 'ADMIN') {
         navigate('/admin-dashboard');
       } else if (role === 'USER') {
-        navigate('/Home');
+        navigate(`/Home?id=${userId}`);
       } else {
         setErrorMessage('Invalid role. Please contact support.');
       }
