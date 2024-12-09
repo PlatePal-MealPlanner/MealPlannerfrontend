@@ -201,13 +201,13 @@ const AdminRecipeManagement = () => {
           <Button color="inherit" onClick={() => navigate("/admin-dashboard")}>
             Users
           </Button>
-          <Button color="inherit" onClick={() => handleNavigation('/admin-recipes')}>
+          <Button color="inherit" onClick={() => navigate('/AdminRecipeManagement')}>
             Recipes
           </Button>
-          <Button color="inherit" onClick={() => handleNavigation('/meal-plans')}>
+          <Button color="inherit" onClick={() => navigate('/AdminMealPlan')}>
             Meal Plans
           </Button>
-          <Button color="inherit" onClick={() => handleNavigation('/shopping-list')}>
+          <Button color="inherit" onClick={() => navigate('/shopping-list')}>
             Shopping List
           </Button>
           <Button color="inherit" onClick={handleLogout}>
