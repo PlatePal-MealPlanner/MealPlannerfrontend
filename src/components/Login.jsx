@@ -48,7 +48,9 @@ const Login = () => {
 
       console.log('Response data:', response.data); // Debugging line
 
+
       const { token, role, userId } = response.data; // Assuming the response includes userId
+
 
       // Store token, role, and userId in localStorage
       localStorage.setItem('token', token);

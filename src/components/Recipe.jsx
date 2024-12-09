@@ -63,6 +63,7 @@ const Recipe = () => {
     setSelectedRecipe(null);
   };
 
+
   const handleAddToMealPlan = async () => {
     try {
       const token = localStorage.getItem("token"); // Retrieve the auth token
@@ -135,7 +136,7 @@ const Recipe = () => {
       alert(error.message || "Failed to add recipe to Meal Plan. Please try again.");
     }
   };
-  
+
 
   const handleAddToShoppingList = async () => {
     try {
