@@ -21,6 +21,17 @@ const Register = () => {
     const password = formData.get('password');
     const confirmPassword = formData.get('confirmPassword');
 
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setMessage(
+        'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.'
+      );
+      setMessageType('error');
+      setOpenSnackbar(true);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setMessage('Passwords do not match');
       setMessageType('error');
@@ -59,65 +70,61 @@ const Register = () => {
 
   return (
     <div className="register-page">
-  <div className="page-background">
-    <div className="container">
-      <img src={logoImage} alt="Logo" className="logo" />
-      <h1 className="title">Sign Up</h1>
+      <div className="page-background">
+        <div className="container">
+          <img src={logoImage} alt="Logo" className="logo" />
+          <h1 className="title">Sign Up</h1>
 
-      {/* Display success or error message */}
-      {message && (
-        <div className={`message ${messageType === 'success' ? 'success' : 'error'}`}>
-          {message}
-        </div>
-      )}
+          <form onSubmit={handleSubmit} className="form">
+            <div className="input-group">
+              <input
+                type="text"
+                name="firstName"
+                placeholder="First Name"
+                required
+                className="input-field"
+              />
+              <input
+                type="text"
+                name="lastName"
+                placeholder="Last Name"
+                required
+                className="input-field"
+              />
+            </div>
 
-      <form onSubmit={handleSubmit} className="form">
-        <div className="input-group">
-          <input
-            type="text"
-            name="firstName"
-            placeholder="First Name"
-            required
-            className="input-field"
-          />
-          <input
-            type="text"
-            name="lastName"
-            placeholder="Last Name"
-            required
-            className="input-field"
-          />
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              required
+              className="input-field"
+              pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$"
+              title="Email must be in the format 'name@domain.com'"
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              required
+              className="input-field"
+              title="Password must be at least 8 characters, include an uppercase letter, a lowercase letter, a number, and a special character."
+            />
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              required
+              className="input-field"
+            />
+            <button type="submit" className="submit-btn">
+              Sign Up
+            </button>
+            <div className="link">
+              Already have an account? <Link to="/login">Sign In</Link>
+            </div>
+          </form>
         </div>
-
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          className="input-field"
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-          className="input-field"
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="Confirm Password"
-          required
-          className="input-field"
-        />
-        <button type="submit" className="submit-btn">
-          Sign Up
-        </button>
-        <div className="link">
-          Already have an account? <Link to="/login">Sign In</Link>
-        </div>
-      </form>
-    </div>
 
         <Snackbar
           open={openSnackbar}
